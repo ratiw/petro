@@ -1,12 +1,14 @@
 # What if?
 
-Would it be nice if you write this code in a Controller,
+What if you write this code in a Controller?
 
-	class Controller_
+	class Controller_...
 
 and you get this!
+
 [Petro_Grid image]
 
+Would it be nice?
 
 # Introducing Petro_Grid
 
