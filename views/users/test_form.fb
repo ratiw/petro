@@ -1,0 +1,16 @@
+<!-- without a leading space or a newline, FormBuilder cannot process the file, so this comment is just a quick fix -->
+{{ :form myform label="Rati's Form" class='formtastic' options="formtastic hilite" }}
+	{{ :group basic class=inputs }}
+		{{ :input first_name label="First Name" }}
+		{{ :input last_name label="Last Name"}}
+		{{ :input dob type=date label="Birthdate"}}
+	{{ :endgroup }}
+	{{ :group advance label="Advance Settings" class=inputs }}
+		{{ :input company }}
+		{{ :input position }}
+	{{ :endgroup }}
+	{{ :group buttons class=buttons }}
+		{{ :button ok value=OK class=update type=submit }}
+		{{ :anchor cancel href=/admin/# }}
+	{{ :endgroup }}
+{{ :endform }}
