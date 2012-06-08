@@ -26,7 +26,7 @@ Autoloader::add_classes(array(
 	'Petro\\Controller_Users'  => __DIR__.'/classes/controller/users.php',
 	'Petro\\Controller_Groups' => __DIR__.'/classes/controller/groups.php',
 	
-	'Petro\\Model_User'       => __DIR__.'/classes/model/user.php',
+	'Petro\\Model_User'        => __DIR__.'/classes/model/user.php',
 	'Petro\\Model_Group'       => __DIR__.'/classes/model/group.php',
 	'Petro\\Model_Comment'     => __DIR__.'/classes/model/comment.php',
 ));

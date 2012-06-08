@@ -12,6 +12,8 @@ class Petro_Form
 	
 	protected $fields = array();
 	
+	protected $sequence = null;
+	
 	protected $buttons = array();
 	
 	protected $validation = null;
@@ -115,9 +117,11 @@ class Petro_Form
 		}
 		
 		// lookup attribute
-		if (isset($form['type']) and $form['type'] == 'lookup')
+		// if (isset($form['type']) and $form['type'] == 'lookup')
+		if (isset($form['type']) and $form['type'] == 'select' and isset($form['lookup']))
 		{
-			$source = $form['source'];
+			// $source = $form['source'];
+			$source = $form['lookup'];
 			if (is_array($source))
 			{
 				$form['options'] = Petro_Lookup::table($source['table'], $source['key'], $source['value']);
@@ -188,6 +192,14 @@ class Petro_Form
 		
 		return $this->validation()->error($field);
 	}
+	
+	public function sequence(array $build_sequence)
+	{
+		if ( ! empty($build_sequence))
+		{
+			$this->sequence = $build_sequence;
+		}
+	}
 
 	public function build($data = array())
 	{
@@ -202,12 +214,23 @@ class Petro_Form
 			);
 		}
 	
-		// $form_open  = \Form::open($form_attr);
 		$form_open  = \Form::open($this->attributes);
 		$form_close = \Form::close();
+		
 		$fields = '';
-		foreach ($this->fields as $f => $props)
+		
+		is_null($this->sequence) and $this->sequence = array_keys($this->fields);
+		// foreach ($this->fields as $f => $props)
+		foreach ($this->sequence as $f)
 		{
+			if ($f[0] == '<')
+			{
+				$fields .= $f;
+				continue;
+			}
+		
+			$props = $this->fields[$f];
+			
 			if ($f == static::$csrf_token_key)
 			{
 				$value = '';
@@ -248,16 +271,7 @@ class Petro_Form
 			$fields .= PHP_EOL;
 		}
 		
-		$form_actions = '';
-		if ( ! empty($this->buttons))
-		{
-			$form_actions .= '<div class="form-actions">';
-			foreach ($this->buttons as $b)
-			{
-				$form_actions .= $b;
-			}
-			$form_actions .= '</div>';
-		}
+		$form_actions = static::render_buttons($this->buttons);
 	
 		return static::template('form', 
 			array('{open}', '{fields}', '{form_buttons}', '{close}'), 
@@ -277,6 +291,11 @@ class Petro_Form
 	public static function textarea($name, $value = null, $attr = array(), $label = '', $errors = array())
 	{
 		return static::_input('textarea', $name, $value, $attr, $label, $errors);
+	}
+	
+	public static function password($name, $value = null, $attr = array(), $label = '', $errors = array())
+	{
+		return static::_input('password', $name, $value, $attr, $label, $errors);
 	}
 
 	protected static function _input($type, $name, $value = null, $attr = array(), $label = '', $errors = array())

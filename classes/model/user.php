@@ -20,11 +20,10 @@ class Model_User extends \Orm\Model {
 			'form' => array('data_type' => 'text'),
 		),
 		'password',
+		'group',
 		'email',
 		'last_login',
-		'ip_address',
-		'status',
-		'activated',
+		'profile_fields',
 		'created_at' => array(
 			'grid' => array('visible' => false),
 		),

@@ -33,6 +33,15 @@ class Controller_Common extends \Controller_Template
 	// array storing user info after logged in
 	protected $user = array();
 	
+	// 
+	protected $model = null;
+	
+	//
+	protected $app_name = null;
+	
+	//
+	protected $view_display_columns = null;
+	
 
 	public static function _init()
 	{
@@ -86,6 +95,18 @@ class Controller_Common extends \Controller_Template
 	{
 		parent::before();
 		
+		// guess app_name, if it is not provided
+		if (is_null($this->app_name))
+		{
+			$this->app_name = \Inflector::classify(\Uri::segment(1));
+		}
+		
+		// guess model name from URI segment, if it is not provided
+		if (is_null($this->model))
+		{
+			$this->model = 'Model_'.\Inflector::classify(\Uri::segment(1));
+		}
+
 		// set app title
 		$this->template->title = static::$title;
 
@@ -107,7 +128,8 @@ class Controller_Common extends \Controller_Template
 		// if require login and not in the ignore login list, then check for login
 		if ($this->must_login and !in_array(\Uri::string(), static::$ignore_login))
 		{
-			if ( ! \Sentry::check())
+			// if ( ! \Sentry::check())
+			if ( ! \Auth::instance()->check())
 			{
 				$this->login_then_redirect(\Uri::string());
 				
@@ -176,7 +198,7 @@ class Controller_Common extends \Controller_Template
 			{
 				$attr = array('class' => 'btn pull-right');
 			}
-			$out = Html::anchor($act['link'], $act['title'], $attr ).$out;
+			$out = \Html::anchor($act['link'], $act['title'], $attr ).$out;
 		}
 		
 		return $out;
@@ -195,7 +217,6 @@ class Controller_Common extends \Controller_Template
 			if ( ! \Security::check_token())
 			{
 				\Log::info('CSRF detected from IP:'.\Input::ip().', Real IP:'.\Input::real_ip().', Ref:'.\Input::referrer().', Agent:'.\Input::user_agent());
-				// \Request::show_404();
 				throw new \HttpNotFoundException();
 			}
 			$val = \Validation::forge('users');
@@ -203,34 +224,26 @@ class Controller_Common extends \Controller_Template
 			$val->add_field('password', 'Your password', 'required|min_length[3]|max_length[20]');
 			if ($val->run())
 			{
-				try
+				$valid_login = \Auth::instance()->login($val->validated('username'), $val->validated('password'));
+				if ($valid_login)
 				{
-					$valid_login = \Sentry::login($val->validated('username'), $val->validated('password'));
-					if ($valid_login)
-					{
-						$user = \Sentry::user();
-						Session::set('user_info', array(
-							'id'         => $user['id'], 
-							'username'   => $user['username'],
-							'email'      => $user['email'],
-							'first_name' => $user['metadata']['first_name'],
-							'last_name'  => $user['metadata']['last_name'],
-						));
-						Session::set_flash('success', 'Welcome, '.$val->validated('username'));
-						$url = Session::get('redirect_url', '/');
-						\Session::delete('redirect_url');
-						\Response::redirect($url);
-					}
-					else
-					{
-						$data['username'] = $val->validated('username');
-						Session::set_flash('error', 'Wrong username/password. Try again');
-					}
+					$user = \Auth::instance()->get_user_array();
+					Session::set('user_info', array(
+						'id'         => $user['id'], 
+						'username'   => $user['username'],
+						'email'      => $user['email'],
+						'first_name' => $user['metadata']['first_name'],
+						'last_name'  => $user['metadata']['last_name'],
+					));
+					Session::set_flash('success', 'Welcome, '.$val->validated('username'));
+					$url = Session::get('redirect_url', '/');
+					\Session::delete('redirect_url');
+					\Response::redirect($url);
 				}
-				catch (SentryAuthException $e)
+				else
 				{
-					$errors = $e->getMessage();
-					$this->template->set_global('errors', $errors);
+					$data['username'] = $val->validated('username');
+					Session::set_flash('error', 'Wrong username/password. Try again');
 				}
 			}
 			else
@@ -247,17 +260,15 @@ class Controller_Common extends \Controller_Template
 	
 	public function action_logout()
 	{
-		// Auth::instance()->logout();
 		\Session::delete('redirect_url');
 		\Session::delete('user_info');
-		\Sentry::logout();
+		\Auth::instance()->logout();
 		\Response::redirect('/');
 	}
 	
 	public function action_signup()
 	{
-		// if ( Auth::check())
-		if ( \Sentry::check() )
+		if ( \Auth::check())
 		{
 			\Response::redirect('/');
 		}
@@ -267,21 +278,19 @@ class Controller_Common extends \Controller_Template
 		$val->add_field('email', 'Email', 'required|valid_email');
 		if ( $val->run() )
 		{
-			// $user_id = Auth::instance()->create_user(
-					// $val->validated('username'),
-					// $val->validated('password'),
-					// $val->validated('email'),
-					// '100'
-			// );
-			$info = array(
-				'username' => $val->validated('username'),
-				'password' => $val->validated('password'),
-				'email' => $val->validated('email'),
+			$user_id = \Auth::instance()->create_user(
+				$val->validated('username'),
+				$val->validated('password'),
+				$val->validated('email'),
+				1,
+				array(
+					'firstname' => $val->validated('firstname'),
+					'lastname'  => $val->validated('lastname')
+				)
 			);
-			$user_id = \Sentry::user()->create($info);
 			if( $user_id )
 			{
-				$user = \Sentry::user($user_id)->add_to_group('users');
+				// $user = \Sentry::user($user_id)->add_to_group('users');
 				
 				Session::set_flash('notice', 'User created.');
 				\Response::redirect('users');
@@ -317,15 +326,15 @@ class Controller_Common extends \Controller_Template
 		
 			if ( !empty($text) )
 			{
-				// $user = \Auth::instance()->get_user_id();
-				// $comment = Model_Comment::forge(array(
-					// 'ref_type' => Input::post('comment_ref_type'),
-					// 'ref_id' => Input::post('comment_ref_id'),
-					// 'user_id' => $user[1],
-					// 'type' => Input::post('comment_type'),
-					// 'text' => $text,
-				// ));
-				$user = \Sentry::user();
+				$user = \Auth::instance()->get_user_id();
+				$comment = Model_Comment::forge(array(
+					'ref_type' => Input::post('comment_ref_type'),
+					'ref_id' => Input::post('comment_ref_id'),
+					'user_id' => $user[1],
+					'type' => Input::post('comment_type'),
+					'text' => $text,
+				));
+				// $user = \Sentry::user();
 				
 				$comment = array(
 					'ref_type' => Input::post('comment_ref_type'),
@@ -347,6 +356,168 @@ class Controller_Common extends \Controller_Template
 		}
 		
 		\Response::redirect(Input::post('last_url'));
+	}
+
+	/**
+	 * CRUD actions
+	 *
+	 */
+	 
+	protected function setup_index() {}
+	
+	protected function setup_view($id) {}
+	
+	protected function setup_form()
+	{
+		$form = new Petro_Form(array('class' => 'form-horizontal'));
+		$form->add_model($this->model);
+		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
+		$form->add_form_action(\Html::anchor(\Uri::segment(1), 'Cancel', array('class' => 'btn')));
+
+		return $form;
+	}
+	
+	public function create_new($validated_input) {}
+	
+	public function edit_update($data, $validated_input) {}
+	
+	public function action_index()
+	{
+		$grid = new Petro_Grid($this->model);
+
+		$this->setup_index();
+		
+		$this->action_items = array(
+			array('title' => 'Add New '.$this->app_name, 'link' => Petro::get_routes('new')),
+		);
+
+		$this->template->set('content', $grid->render(), false);
+	}
+
+	public function action_view($id = null)
+	{
+		$model = $this->model;
+		$data = $model::find($id);
+
+		$out = '';
+
+		$out .= Petro::render_panel(
+			$this->app_name.' Information',
+			Petro::render_attr_table($data,	$this->view_display_columns)
+		);
+		
+		$out .= $this->setup_view($id);
+
+		$routes = Petro::get_routes($id);
+		$this->action_items = array(
+			array('title' => 'Edit '.$this->app_name, 'link' => $routes['edit']),
+			array(
+				'title' => 'Delete '.$this->app_name, 
+				'link' => $routes['delete'], 
+				'attr' => array(
+					'data-toggle' => 'modal', 'data-target' => '#petro-confirm', 'class' => 'del-item',
+				)
+			),
+		);
+		
+		$this->template->set('content', $out, false);
+	}
+
+	public function action_create()
+	{
+		$form = $this->setup_form();
+	
+		if (Input::method() == 'POST')
+		{
+			if ($form->validation()->run() === true)
+			{
+				$fields = $form->validated();
+
+				// if the extended class define 'create_new' method, call it
+				// this method must return the updated data
+				$fields = $this->create_new($fields);
+				
+				$model = $this->model;
+				$data = $model::forge($fields);
+				
+				if ($data and $data->save())
+				{
+					Session::set_flash('success', 'Data has been added successfully.');
+					Response::redirect(\Uri::segment(1));
+				}
+				else
+				{
+					Session::set_flash('error', 'Could not create new record.');
+				}
+			}
+			else
+			{
+				$this->template->set_global('errors', $form->error(), false);
+			}
+		}
+
+		$this->template->page_title = "New ".\Inflector::classfy(Uri::segment(1));
+		$this->template->set('content', $form->build(), false);
+	}
+	
+	public function action_edit($id = null)
+	{
+		$model = $this->model;
+		
+		$data = $model::find($id);
+		
+		$form = $this->setup_form();
+
+		if (Input::method() == 'POST')
+		{
+			if ($form->validation()->run() === true)
+			{
+				$fields = $form->validate();
+				
+				// if the extended class has defined 'edit_update' method, call it
+				// this method must return the updated data
+				$data = $this->edit_update($data, $fields);
+				
+				foreach ($fields as $name => $val)
+				{
+					$data->$name = $val;
+				}
+			
+				if ($data->save())
+				{
+					Session::set_flash('success', 'Updated client #' . $id);
+					Response::redirect(\Uri::segment(1));
+				}
+				else
+				{
+					Session::set_flash('error', 'Could not update client #' . $id);
+				}
+			}
+			else
+			{
+				$this->template->set_global('errors', $form->error(), false);
+			}
+		}
+		
+		$this->template->page_title = "Edit ".\Inflector::classfy(Uri::segment(1));
+		$this->template->set('content', $form->build($data), false);
+	}
+	
+	public function action_delete($id = null)
+	{
+		$model = $this->model;
+		
+		if ( ! is_null($id) and $client = $model::find($id)->delete())
+		{
+			Session::set_flash('success', 'Record has successfully been deleted.');
+		}
+		else
+		{
+			Session::set_flash('error', 'Could not delete data.');
+		}
+
+		Response::redirect(\Uri::segment(1));
+
 	}
 
 }

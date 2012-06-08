@@ -2,14 +2,14 @@
 
 namespace Petro;
 
-use Form;
-use View;
-use Input;
 use Date;
 use DateTime;
-use Uri;
-use Lang;
 use DB;
+use Form;
+use Input;
+use Lang;
+use Uri;
+use View;
 
 class Petro 
 {
@@ -43,14 +43,26 @@ class Petro
 	 * Usage:
 	 *   1. Petro::render_attr_table(<model>);
 	 *   2. Petro::render_attr_table(<model>, array(<col1> [ => Closure], <col2> [ => Closure], ..));
+	 * -------------------------
+	 * 1.1 render_attr_table(array)
+	 *		this will use array key => value to render
+	 * 1.2 render_attr_table($data_from_model)
+	 *		this will use $data->key => $data->value to render
+	 * 		if $data is from Orm\Model, we can use Model::properties() 
+	 * 2.1 render_attr_table(array1, $disp_columns)
+	 *		only array key contained in $disp_columns will be render
+	 * 2.2 render_attr_table($data_from_model, $disp_columns)
+	 *		only column key contained in $disp_columns will be render
+	 * 3 if $disp_columns contain Closure as its value, Closure will be called and
+	 *		the return value from Closure will be used
 	 */
-	public static function render_attr_table($data, $columns = null, $raw = false)
+	public static function render_attr_table($data, $columns = null)
 	{
 		if ( ! isset($data))
 		{
 			return "No data to display.";
 		}
-		
+
 		if ( ! isset($columns))
 		{
 			$columns = $data->properties();
@@ -72,17 +84,50 @@ class Petro
 			}
 			else
 			{
-				if ( ! is_array($prop))
+				if ( ! is_array($prop) and ! $data instanceof \Orm\Model)
 				{
 					$value = $data->$name;
 				}
 				else // if it is array, it must be read from Model's properties
 				{
-					if (isset($prop['label']))
+					$prop = $data->property($name);
+					$form = isset($prop['form']) ? $prop['form'] : array();
+					$grid = isset($prop['grid']) ? $prop['grid'] : array();
+				
+					isset($prop['label']) and $label = $prop['label'];
+					
+					if (isset($form['type']) and $form['type'] == 'select')
 					{
-						$label = $prop['label'];
+						if (isset($form['lookup']) and ! isset($form['options']))
+						{
+							if ( ! is_array($form['lookup']))
+							{
+								$form['options'] = Petro_Lookup::get($form['lookup']);
+							}
+						}
+						
+						if (isset($form['options']))
+						{
+							foreach ($form['options'] as $key => $val)
+							{
+								$form['options'][$key] = \Lang::get($val) ?: $val;
+							}
+						}
 					}
-					$value = $data->$name;
+
+					if ( ! empty($form['options']))
+					{
+						$value = $form['options'][$data->$name];
+					}
+					else
+					{
+						$value = $data->$name;
+					}
+					
+					if (isset($grid['format']))
+					{
+						$value = Petro_Grid::format($grid['format'], $value);
+					}
 				}
 			}
 
@@ -403,6 +448,18 @@ class Petro
 				return $routes;
 			}
 		}
+	}
+	
+	public static function obj_to_keyval($objects, $key_field, $val_field)
+	{
+		$arr = array();
+		
+		foreach ($objects as $obj)
+		{
+			$arr[$obj->$key_field] = $obj->$val_field;
+		}
+		
+		return $arr;
 	}
 	
 	protected static function _is_assoc($arr)

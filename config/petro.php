@@ -86,7 +86,7 @@ return array(
 			'wrapper_start'	   => "<ul class=\"nav\">\n",
 			'wrapper_end'		   => "</ul>\n",
 			'menu_item'		   => "\t<li id=\"menu_{menu_id}\"{active}>\n\t\t<a href=\"{link}\">{label}</a>\n\t</li>\n",
-			'menu_dropdown'	   => "\t<li id=\"menu_{menu_id}\" class=\"dropdown{active}\">\n\t\t<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{label}<b class=\"caret\"></b></a>\n\t\t<ul class=\"dropdown-menu\">\n\t\t\t{submenu}\n\t\t</ul>\n\t</li>\n",
+			'menu_dropdown'	   => "\t<li id=\"menu_{menu_id}\" class=\"dropdown{active}\">\n\t\t<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{label} <b class=\"caret\"></b></a>\n\t\t<ul class=\"dropdown-menu\">\n\t\t\t{submenu}\n\t\t</ul>\n\t</li>\n",
 		),
 		
 		'panel' => "<div class=\"{class}\">\n\t<p>{title}</p>\n\t<div class=\"panel_contents\">\n\t\t{content}\n\t</div>\n</div>\n",

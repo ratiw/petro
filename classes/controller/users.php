@@ -3,6 +3,15 @@ namespace Petro;
 
 class Controller_Users extends Controller_Common 
 {
+	protected static $groups = array();
+	
+	public static function _init()
+	{
+		parent::_init();
+		$objects = \Model_Group::find('all', array('order_by' => 'level'));
+		static::$groups = Petro::obj_to_keyval($objects, 'level', 'name');
+	}
+
 	protected static function _columns()
 	{
 		$columns = array(
@@ -13,14 +22,7 @@ class Controller_Users extends Controller_Common
 					'visible' => true, 
 					'sortable' => true,
 					'process' => function($data) {
-						$str = '';
-						$user = \Sentry::user((int)$data->id);
-						foreach( $user->groups() as $g )
-						{
-							$str .= empty($str) ? '' : ', ';
-							$str .= \Inflector::humanize($g['name']);
-						}
-						return $str;
+						return static::$groups[$data->group];
 					},
 				)
 			),
@@ -41,9 +43,9 @@ class Controller_Users extends Controller_Common
 		return $columns;
 	}
 
-	public function action_index($curr_page = 1, $order_by = null, $scope = null, $filter = null)
+	public function action_index() //$curr_page = 1, $order_by = null, $scope = null, $filter = null)
 	{
-		$data['filter'] = \Input::param('q');
+		// $data['filter'] = \Input::param('q');
 
 		$grid = new Petro_Grid('Model_User', static::_columns());
 		// $grid = new Petro_Grid('Model_User', array('id', 'username', 'email'));
@@ -97,36 +99,46 @@ class Controller_Users extends Controller_Common
 			$val = $this->setup_validation();
 			if ($val->run())
 			{
-				$user = $this->get_post_data($val->validated());
-				$groups = \Input::post('groups');
+				$data = $this->get_post_data($val->validated());
+				$data['last_login'] = 0;
+				// $groups = \Input::post('groups');
 
 				try 
 				{
 					\DB::start_transaction();
 					
-					$user_id = \Sentry::user()->create($user);
+					// $user_id = \Sentry::user()->create($user);
+					// $user = new Model_User($data);
+					$user = \Auth::instance()->create_user(
+						$data['username'], 
+						$data['password'], 
+						$data['email'],
+						$data['group'],
+						$data['profile_fields']
+					);
 					
-					if ($user_id)
+					if ($user)
 					{
-						$user = \Sentry::user($user_id);
-						foreach ($groups as $g)
-						{
-							$user->add_to_group($g);
-						}
+						// $user = \Sentry::user($user_id);
+						// foreach ($groups as $g)
+						// {
+							// $user->add_to_group($g);
+						// }
 					}
-					else
-					{
-						throw new \Exception('Could not create new user. ['.mysql_errno().'] '.mysql_error());
-					}
+					// else
+					// {
+						// throw new \FuelException('Could not create new user. ['.mysql_errno().'] '.mysql_error());
+						// throw new \FuelException('Could not create new user. ');
+					// }
 
 					\DB::commit_transaction();
 					\Session::set_flash('success', 'New user successfully added.');
 					\Response::redirect('users');
 				}
-				catch (Exception $e)
+				catch (\FuelException $e)
 				{
 					\DB::rollback_transaction();
-					\Session::set_flash('error', $e->getMessage());
+					\Session::set_flash('error', 'Could not create new user. '.$e->getMessage());
 				}
 			}
 			else
@@ -149,7 +161,7 @@ class Controller_Users extends Controller_Common
 		$val->add_field('username', 'Username', 'required');
 		$val->add_field('password', 'Password', 'required');
 		$val->add_field('password2', 'Confirm Password', 'required|match_field[password]');
-		$val->add_field('groups', 'Groups', 'required');
+		$val->add_field('group', 'Group', 'required');
 		
 		return $val;
 	}
@@ -159,17 +171,35 @@ class Controller_Users extends Controller_Common
 		return array(
 			'username'  => $fields['username'],
 			'password'  => $fields['password'],
+			'group'     => $fields['group'],
 			'email'     => $fields['email'],
-			'metadata'  => array(
+			'profile_fields' => array(
 				'first_name' => $fields['firstname'],
 				'last_name'  => $fields['lastname'],
-			)
+			),
 		);
+	}
+	
+	public function load_user($id)
+	{
+		$user = Model_User::find($id);
+		
+		if (isset($user->profile_fields))
+		{
+			$user->profile_fields = @unserialize($user->profile_fields);
+		}
+		else
+		{
+			$user->profile_fields = array();
+		}
+	
+		return $user;
 	}
 	
 	public function action_edit($id = null)
 	{
-		$user = \Sentry::user((int)$id);
+		// $user = \Sentry::user((int)$id);
+		$user = $this->load_user($id);
 		
 		if (\Input::method() == 'POST')
 		{
@@ -183,33 +213,41 @@ class Controller_Users extends Controller_Common
 				{
 					\DB::start_transaction();
 					
-					$update = $user->update(array(
-						'password' => \Input::post('password'),
-						'email'     => \Input::post('email'),
-						'metadata'  => array(
+					// $update = $user->update(array(
+						// 'password' => \Input::post('password'),
+						// 'email'     => \Input::post('email'),
+						// 'first_name' => \Input::post('firstname'),
+						// 'last_name'  => \Input::post('lastname'),
+					// ));
+					
+					$update = \Auth::instance()->update_user(
+						array(
+							'password' => \Input::post('password'),
+							'email'     => \Input::post('email'),
 							'first_name' => \Input::post('firstname'),
 							'last_name'  => \Input::post('lastname'),
-						)
-					));
+						),
+						\Input::post('username')
+					);
 					
-					if ($update)
-					{
-						foreach (\Sentry::group()->all() as $g)
-						{
-							if (in_array($g['id'], $groups) and ! $user->in_group($g['id']))
-							{
-								$user->add_to_group($g['id']);
-							}
-							elseif ( ! in_array($g['id'], $groups) and $user->in_group($g['id']))
-							{
-								$user->remove_from_group($g['id']);
-							}
-						}
-					}
-					else
-					{
-						throw new \FuelException('Could note update user#'.$id.' ['.mysql_errno().'] '.mysql_error());
-					}
+					// if ($update)
+					// {
+						// foreach (\Sentry::group()->all() as $g)
+						// {
+							// if (in_array($g['id'], $groups) and ! $user->in_group($g['id']))
+							// {
+								// $user->add_to_group($g['id']);
+							// }
+							// elseif ( ! in_array($g['id'], $groups) and $user->in_group($g['id']))
+							// {
+								// $user->remove_from_group($g['id']);
+							// }
+						// }
+					// }
+					// else
+					// {
+						// throw new \FuelException('Could note update user#'.$id.' ['.mysql_errno().'] '.mysql_error());
+					// }
 					
 					\DB::commit_transaction();
 					\Session::set_flash('success', 'User info successfully updated');
@@ -229,6 +267,7 @@ class Controller_Users extends Controller_Common
 		else
 		{
 			$this->template->set_global('user', $user, false);
+			$this->template->set_global('edit_mode', true);
 		}
 		
 		$this->template->page_title = "Edit User";

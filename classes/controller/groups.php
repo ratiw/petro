@@ -28,6 +28,16 @@ class Controller_Groups extends Controller_Common
 		$this->template->set('content', $data, false);
 	}
 	
+	protected function setup_form()
+	{
+		$form = new Petro_Form(array('class' => 'form-horizontal'));
+		$form->add_model('Model_Group');
+		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
+		$form->add_form_action(\Html::anchor('groups', 'Cancel', array('class' => 'btn')));
+
+		return $form;
+	}
+	
 	public function action_create()
 	{
 		// Using FuelPHP's Fieldset
@@ -37,11 +47,7 @@ class Controller_Groups extends Controller_Common
 		
 		// $this->template->set('content', $form->build(), false);
 		
-		$form = new Petro_Form(array('class' => 'form-horizontal'));
-		$form->add_model('Model_Group');
-		// $form->load_macros('bootstrap.vertical-form');
-		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
-		$form->add_form_action(\Html::anchor('groups', 'Cancel', array('class' => 'btn')));
+		$form = $this->setup_form();
 		
 		if (\Input::method() == 'POST')
 		{
@@ -51,13 +57,13 @@ class Controller_Groups extends Controller_Common
 				
 				try
 				{
-					$group_id = \Sentry::group()->create(array(
+					$group = new Model_Group(array(
 						'name'     => $fields['name'],
 						'level'    => $fields['level'],
 						'is_admin' => $fields['is_admin'],
 					));
 					
-					if ($group_id)
+					if ($group and $group->save())
 					{
 						\Session::set_flash('success', 'New group has been created successfully.');
 						\Response::redirect('groups');
@@ -67,10 +73,9 @@ class Controller_Groups extends Controller_Common
 						throw new \FuelException('Could not create new group ['.mysql_errno().'] '.mysql_error());
 					}
 				}
-				catch (SentryGroupException $e)
+				catch(\FuelException $e)
 				{
 					$errors = $e->getMessage();
-
 				}
 			}
 			else
@@ -84,12 +89,9 @@ class Controller_Groups extends Controller_Common
 	
 	public function action_edit($id = null)
 	{
-		$group = \Sentry::group((int)$id);
+		$group = Model_Group::find($id);
 		
-		$form = new Petro_Form(array('class' => 'form-horizontal'));
-		$form->add_model('Model_Group');
-		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
-		$form->add_form_action(\Html::anchor('groups', 'Cancel', array('class' => 'btn')));
+		$form = $this->setup_form();
 
 		if (\Input::method() == 'POST')
 		{
@@ -99,13 +101,11 @@ class Controller_Groups extends Controller_Common
 				
 				try
 				{
-					$update = $group->update(array(
-						'name'     => $fields['name'],
-						'level'    => $fields['level'],
-						'is_admin' => $fields['is_admin'],
-					));
+					$group->name = $fields['name'];
+					$group->level = $fields['level'];
+					$group->is_admin = $fields['is_admin'];
 					
-					if ($update)
+					if ($group->save())
 					{
 						\Session::set_flash('success', 'Group info has been updated successfully.');
 						\Response::redirect('groups');
@@ -115,7 +115,7 @@ class Controller_Groups extends Controller_Common
 						throw new \FuelException('Could not update group#'.$id.' ['.mysql_errno().'] '.mysql_error());
 					}
 				}
-				catch (SentryGroupException $e)
+				catch (\FuelException $e)
 				{
 					$errors = $e->getMessage();
 
@@ -136,7 +136,7 @@ class Controller_Groups extends Controller_Common
 	
 	public function action_delete($id = null)
 	{
-		if ( ! is_null($id) and $gid = \Sentry::group($id)->delete())
+		if ( ! is_null($id) and $gid = Model_Group::find($id)->delete())
 		{
 			\Session::set_flash('success', 'Group #'.$id.' has been deleted.');
 		}

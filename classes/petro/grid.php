@@ -575,7 +575,8 @@ class Petro_Grid
 				// handle 'format' options
 				if (isset($grid['format']))
 				{
-					$value = $this->format($grid['format'], $value);
+					// $value = $this->format($grid['format'], $value);
+					$value = static::format($grid['format'], $value);
 				}
 
 				$align = isset($grid['align']) ? ' class="align-'.$grid['align'].'"' : '';
@@ -589,7 +590,7 @@ class Petro_Grid
 		return $t['table_body_start'].$body.$t['table_body_end'];
 	}
 	
-	public function format($format, $value)
+	public static function format($format, $value)
 	{
 		if (is_null($format))
 		{

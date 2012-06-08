@@ -9,6 +9,7 @@
 		echo Asset::css('bootstrap.min.css');
 		echo Asset::css('ui-lightness/jquery-ui-1.8.16.custom.css');
 		echo Asset::css('petro.css');
+		echo Asset::css('markdown.css');
 		// echo Asset::js('jquery-1.7.1.min.js');
 		echo Asset::js('http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js');
 		// echo Asset::js('jquery-ui-1.8.16.custom.min.js');
@@ -46,7 +47,7 @@
 					<li class="dropdown">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 							<i class="icon-user icon-white"></i>&nbsp;
-							<?php echo isset($user['email']) ? $user['email'] : ''; ?><b class="caret"></b>
+							<?php echo isset($user['email']) ? $user['email'] : ''; ?> <b class="caret"></b>
 						</a>
 						<ul class="dropdown-menu">
 							<li>
@@ -152,14 +153,6 @@
 		Powered by <a href="http://fuelphp.com"><b>FuelPHP</b></a> [{exec_time}s {mem_usage}mb]. Interfaces and themes inspired by <a href="http://activeadmin.info">ActiveAdmin</a>
 		<br>Designed for 1024x600 resolution.
 		</p>
-		<pre><code>
-		<?php 
-			echo "Uri::base() = ".Uri::base(); 
-			echo "<br>Uri::current() = ".Uri::current();
-			echo "<br>Uri::string() = ".Uri::string();
-			echo "<br>Session::get() = ".Session::get('redirect_url', 'null');
-		?>
-		</code></pre>
 	</div>
 </body>
 </html>
