@@ -9,14 +9,14 @@
 	<div class="row">
 		<div class="well span8">
 			<?php 
-				echo Petro_Form::input('firstname', 
-					Input::post('firstname', isset($user) ? $user->profile_fields['first_name'] : ''),
+				echo Petro_Form::input('first_name', 
+					Input::post('first_name', isset($user) ? $user->profile_fields['first_name'] : ''),
 					array(),
 					'First Name', 
 					$errors
 				);
-				echo Petro_Form::input('lastname',
-					Input::post('lastname', isset($user) ? $user->profile_fields['last_name'] : ''),
+				echo Petro_Form::input('last_name',
+					Input::post('last_name', isset($user) ? $user->profile_fields['last_name'] : ''),
 					array(),
 					'Last Name',
 					$errors
@@ -30,22 +30,25 @@
 				echo '<hr/>';
 				echo Petro_Form::input('username',
 					Input::post('username', isset($user) ? $user->username : ''),
-					$edit_mode ? array('disabled' => 'disabled') : array(),
+					$edit_mode ? array('readonly' => 'readonly') : array(),
 					'Username',
 					$errors
 				);
-				echo Petro_Form::password('password',
-					Input::post('password', ''),
-					array(),
-					'Password',
-					$errors
-				);
-				echo Petro_Form::password('password2',
-					Input::post('password2', ''),
-					array(),
-					'Confirm Password',
-					$errors
-				);
+				if ( ! $edit_mode)
+				{
+					echo Petro_Form::password('password',
+						Input::post('password', ''),
+						array(),
+						'Password',
+						$errors
+					);
+					echo Petro_Form::password('password2',
+						Input::post('password2', ''),
+						array(),
+						'Confirm Password',
+						$errors
+					);
+				}
 				echo '<hr/>';
 				$groups = Petro_Lookup::table('groups', 'level', 'name');
 				echo Petro_Form::select('group', 

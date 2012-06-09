@@ -16,6 +16,15 @@ class Controller_Users extends Controller_Common
 	{
 		$columns = array(
 			'id' => array('label' => 'ID', 'grid' => array('visible' => true, 'sortable' => true)),
+			'name' => array(
+				'label' => 'Name',
+				'grid' => array(
+					'process' => function($data) {
+						$prof = unserialize($data->profile_fields);
+						return $prof['first_name'].' '.$prof['last_name'];
+					},
+				),
+			),
 			'username' => array('label' => 'Username', 'grid' => array('visible' => true, 'sortable' => true)),
 			'group' => array('label' => 'Group', 
 				'grid' => array(
@@ -152,15 +161,18 @@ class Controller_Users extends Controller_Common
 		$this->template->content = \View::forge('users/create');
 	}
 
-	protected function setup_validation($mode = null)
+	protected function setup_validation($edit_mode = false)
 	{
 		$val = \Validation::forge('users');
-		$val->add_field('firstname', 'First Name', 'required');
-		$val->add_field('lastname', 'Last Name', 'required');
+		$val->add_field('first_name', 'First Name', 'required');
+		$val->add_field('last_name', 'Last Name', 'required');
 		$val->add_field('email', 'Email', 'required|valid_email');
-		$val->add_field('username', 'Username', 'required');
-		$val->add_field('password', 'Password', 'required');
-		$val->add_field('password2', 'Confirm Password', 'required|match_field[password]');
+		if ( ! $edit_mode)
+		{
+			$val->add_field('username', 'Username', 'required');
+			$val->add_field('password', 'Password', 'required');
+			$val->add_field('password2', 'Confirm Password', 'required|match_field[password]');
+		}
 		$val->add_field('group', 'Group', 'required');
 		
 		return $val;
@@ -174,8 +186,8 @@ class Controller_Users extends Controller_Common
 			'group'     => $fields['group'],
 			'email'     => $fields['email'],
 			'profile_fields' => array(
-				'first_name' => $fields['firstname'],
-				'last_name'  => $fields['lastname'],
+				'first_name' => $fields['first_name'],
+				'last_name'  => $fields['last_name'],
 			),
 		);
 	}
@@ -198,15 +210,12 @@ class Controller_Users extends Controller_Common
 	
 	public function action_edit($id = null)
 	{
-		// $user = \Sentry::user((int)$id);
-		$user = $this->load_user($id);
-		
 		if (\Input::method() == 'POST')
 		{
-			$val = $this->setup_validation();
+			$val = $this->setup_validation(true);
 			if ($val->run())
 			{
-				// $user = $this->get_post_data();
+				$data = $this->get_post_data($val->validated());
 				$groups = \Input::post('groups');
 				
 				try
@@ -222,10 +231,10 @@ class Controller_Users extends Controller_Common
 					
 					$update = \Auth::instance()->update_user(
 						array(
-							'password' => \Input::post('password'),
+							// 'password' => \Input::post('password'),
 							'email'     => \Input::post('email'),
-							'first_name' => \Input::post('firstname'),
-							'last_name'  => \Input::post('lastname'),
+							'first_name' => \Input::post('first_name'),
+							'last_name'  => \Input::post('last_name'),
 						),
 						\Input::post('username')
 					);
@@ -261,11 +270,15 @@ class Controller_Users extends Controller_Common
 			}
 			else
 			{
+				$this->template->set_global('edit_mode', true);
 				$this->template->set_global('errors', $val->error());
 			}
 		}
 		else
 		{
+			// $user = \Sentry::user((int)$id);
+			$user = $this->load_user($id);
+		
 			$this->template->set_global('user', $user, false);
 			$this->template->set_global('edit_mode', true);
 		}

@@ -15,7 +15,7 @@ Petro provides a Controller template for you to work on
 * __Petro_Lookup__  
 * __Petro_Comment__  
 * __Petro_Form__  
-* together they form a __RAD Environment__ -- _how?_
+* together they form a _RAD Environment_ -- __Petro_App__
 
 -------------------------------------------------
 
