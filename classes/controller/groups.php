@@ -2,7 +2,7 @@
 
 namespace Petro;
 
-class Controller_Groups extends Controller_Common 
+class Controller_Groups extends Controller_App
 {
 	public function action_index()
 	{

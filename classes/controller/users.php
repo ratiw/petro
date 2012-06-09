@@ -1,7 +1,7 @@
 <?php
 namespace Petro;
 
-class Controller_Users extends Controller_Common 
+class Controller_Users extends Controller_App
 {
 	protected static $groups = array();
 	
