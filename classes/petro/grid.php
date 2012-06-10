@@ -75,7 +75,7 @@ class Petro_Grid
 		
 		static::$template = \Config::get('petro.template');
 		
-		if ( isset($columns) )
+		if (isset($columns))
 		{
 			$this->set_columns($columns);
 		}
@@ -84,7 +84,7 @@ class Petro_Grid
 			$this->grab_columns();
 		}
 		
-		if ( empty($this->order_by) and count($this->columns) > 0)
+		if (empty($this->order_by) and count($this->columns) > 0)
 		{
 			$col_name = $this->columns[0]['name'];
 			$this->set_order_by(implode('_', array($col_name, 'asc')));
@@ -130,7 +130,7 @@ class Petro_Grid
 	
 	public function set_columns($columns)
 	{
-		if ( is_null($columns))
+		if (is_null($columns))
 		{
 			return;
 		}
@@ -203,7 +203,7 @@ class Petro_Grid
 			'grid'       => $grid,
 		);
 		
-		if ( count($this->columns) === 0 )	// is the the first column added?
+		if (count($this->columns) === 0)	// is the the first column added?
 		{
 			// if so, use it as the default order_by
 			$this->order_by = array(
@@ -386,9 +386,9 @@ class Petro_Grid
 	public static function split_last($chr, $str)
 	{
 		$pos = strripos($str, $chr);
-		if ( $pos )
+		if ($pos)
 		{
-			return array( substr($str, 0, $pos), substr($str, $pos+1) );
+			return array(substr($str, 0, $pos), substr($str, $pos+1));
 		}
 		else
 		{
@@ -412,31 +412,43 @@ class Petro_Grid
 	 */
 	public static function a2q($a)
 	{
-		// var_dump($a);
 		if ( !is_array($a) )
 		{
 			throw new Fuel_Exception('Invalid argument. Expected array parameter in static::a2q()');
 		}
 	
 		$q = '';
-		
 		foreach ($a as $k => $v)
 		{
 			$q .= empty($q) ? '' : '&';
-			if ( is_array($v) )
+			if (is_array($v))
 			{
 				if ($v[1] == 'like')
 				{
 					$v[2] = str_replace('%', '', $v[2]);
 				}
-				$q .= 'q['.$v[0].'_'.(static::get_array_key(static::$op, $v[1])).']='.$v[2];
+				if (is_array($v[2]))	// handle 'in' operator for checkbox
+				{
+					$r = 'q['.$v[0].'_'.(static::get_array_key(static::$op, $v[1])).']';
+					$s = '';
+					foreach ($v[2] as $rk => $rv)
+					{
+						$s .= empty($s) ?: '&';
+						$s .= $r.'['.$rk.']='.$rv;
+					}
+					$q .= $s;
+				}
+				else
+				{
+					$q .= 'q['.$v[0].'_'.(static::get_array_key(static::$op, $v[1])).']='.$v[2];
+				}
 			}
 			else
 			{
 				$q .= $k.'='.$v;
 			}
 		}
-	
+		
 		return $q;
 	}
 	
@@ -478,19 +490,19 @@ class Petro_Grid
 			$prop = $this->columns[$col];
 			$grid = $prop['grid'];
 			
-			if ( isset($grid['visible']) and $grid['visible'] == false )
+			if (isset($grid['visible']) and $grid['visible'] == false)
 			{
 				continue;
 			}
 			
-			if ( !isset($prop['label']) )
+			if ( ! isset($prop['label']))
 			{
 				$prop['label'] = \Lang::get($prop['name']) ?: \Inflector::humanize($prop['name']);
 			}
 		
 			$th = '';
 			
-			if ( isset($grid['sortable']) and $grid['sortable'] == true )
+			if (isset($grid['sortable']) and $grid['sortable'] == true)
 			{
 				if ($prop['name'] == $this->order_by['col'])
 				{
@@ -745,7 +757,7 @@ class Petro_Grid
 			$query->where($this->filters);
 		}
 
-		if ( isset($this->order_by) and !empty($this->order_by) )
+		if (isset($this->order_by) and !empty($this->order_by))
 		{
 			$query->order_by($this->order_by['col'], $this->order_by['dir']);
 		}
@@ -765,12 +777,12 @@ class Petro_Grid
 	
 	public function set_order_by($order_by = '')
 	{
-		if ( empty($order_by) )
+		if (empty($order_by))
 		{
 			return;
 		}
 		
-		if ( is_array($order_by) )
+		if (is_array($order_by))
 		{
 			$this->order_by = array(
 				'col' => Str::lower($order_by[0]),
@@ -924,7 +936,7 @@ class Petro_Grid
 	
 	public function create_scopes()
 	{
-		if ( empty($this->scopes) or !isset($this->model) )
+		if (empty($this->scopes) or !isset($this->model))
 		{
 			return;
 		}
@@ -939,7 +951,7 @@ class Petro_Grid
 		
 			$p['count'] = $this->fetch_count($s);
 		
-			if ( isset($selected) and $s == $selected )
+			if (isset($selected) and $s == $selected)
 			{
 				$str .= $t['selected_start'];
 				$str .= $p['label'];
