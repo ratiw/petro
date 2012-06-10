@@ -117,10 +117,8 @@ class Petro_Form
 		}
 		
 		// lookup attribute
-		// if (isset($form['type']) and $form['type'] == 'lookup')
 		if (isset($form['type']) and $form['type'] == 'select' and isset($form['lookup']))
 		{
-			// $source = $form['source'];
 			$source = $form['lookup'];
 			if (is_array($source))
 			{
@@ -220,7 +218,7 @@ class Petro_Form
 		$fields = '';
 		
 		is_null($this->sequence) and $this->sequence = array_keys($this->fields);
-		// foreach ($this->fields as $f => $props)
+		
 		foreach ($this->sequence as $f)
 		{
 			if ($f[0] == '<')
@@ -242,6 +240,7 @@ class Petro_Form
 			$label = $props['label'];
 			$form = $props['form'];
 			$type = isset($form['type']) ? $form['type'] : 'input';
+			$options = isset($form['options']) ? $form['options'] : array();
 			$attr = isset($form['attr']) ? $form['attr'] : array();
 			$errors = $this->error();
 
@@ -256,13 +255,13 @@ class Petro_Form
 					$fields .= static::textarea($f, $value, $attr, $label, $errors);
 					break;
 				case 'radio':
-					$fields .= static::radio_group($f, $value, false, $attr, $errors);
+					$fields .= static::radio_group($f, $options, $value, false, $attr, $label, $errors);
 					break;
 				case 'checkbox':
-					$fields .= static::checkbox_group($f, $value, $checked = null, false, $attr, $errors);
+					$fields .= static::checkbox_group($f, $options, $value, false, $attr, $label, $errors);
 					break;
 				case 'select':
-					$fields .= static::select($f, $value, $form['options'], $attr, $label, $errors);
+					$fields .= static::select($f, $value, $options, $attr, $label, $errors);
 					break;
 				case 'lookup':
 				default:
@@ -321,22 +320,22 @@ class Petro_Form
 		return static::render_field($out, $name, $label, $errors);
 	}
 	
-	public static function radio_group($name, $options = array(), $checked = null, $is_inline = false, $attr = array(), $errors)
+	public static function radio_group($name, $options = array(), $value = null, $is_inline = false, $attr = array(), $label = '', $errors)
 	{
 		$is_inline = $is_inline ? 'inline' : '';
 
 		$out = '';
 		foreach ($options as $key => $val)
 		{
-			$is_checked = ($key == $checked) ? array('checked' => 'checked') : array();
-			$f = \Form::radio($name, $key);
+			$is_checked = ($key == $value) ? array('checked' => 'checked') : array();
+			$f = \Form::radio($name, $key, $is_checked);
 			$out .= static::template('radio_item', array('{is_inline}', '{field}', '{label}'), array($is_inline, $f, $val));
 		}
 		
 		return static::render_field($out, $name, $label, $errors);
 	}
 	
-	public static function checkbox_group($name, $options = array(), $checked = null, $is_inline = false, $attr = array(), $errors)
+	public static function checkbox_group($name, $options = array(), $checked = null, $is_inline = false, $attr = array(), $label = '', $errors)
 	{
 		$is_inline = $is_inline ? 'inline' : '';
 
