@@ -128,7 +128,6 @@ class Controller_App extends \Controller_Template
 		// if require login and not in the ignore login list, then check for login
 		if ($this->must_login and !in_array(\Uri::string(), static::$ignore_login))
 		{
-			// if ( ! \Sentry::check())
 			if ( ! \Auth::instance()->check())
 			{
 				$this->login_then_redirect(\Uri::string());
@@ -334,7 +333,6 @@ class Controller_App extends \Controller_Template
 					'type' => Input::post('comment_type'),
 					'text' => $text,
 				));
-				// $user = \Sentry::user();
 				
 				$comment = array(
 					'ref_type' => Input::post('comment_ref_type'),
@@ -367,6 +365,18 @@ class Controller_App extends \Controller_Template
 	
 	protected function setup_view($id) {}
 	
+	public function before_insert($validated_input) {}
+	
+	public function after_insert() {}
+	
+	public function before_update($data, $validated_input) {}
+	
+	public function after_update() {}
+	
+	public function before_delete($id) {}
+	
+	public function after_delete() {}
+	
 	protected function setup_form()
 	{
 		$form = new Petro_Form(array('class' => 'form-horizontal'));
@@ -376,10 +386,6 @@ class Controller_App extends \Controller_Template
 
 		return $form;
 	}
-	
-	public function create_new($validated_input) {}
-	
-	public function edit_update($data, $validated_input) {}
 	
 	public function action_index()
 	{
@@ -435,13 +441,14 @@ class Controller_App extends \Controller_Template
 
 				// if the extended class define 'create_new' method, call it
 				// this method must return the updated data
-				$fields = $this->create_new($fields);
+				$fields = $this->before_insert($fields);
 				
 				$model = $this->model;
 				$data = $model::forge($fields);
 				
 				if ($data and $data->save())
 				{
+					$this->after_insert();
 					Session::set_flash('success', 'Data has been added successfully.');
 					Response::redirect(\Uri::segment(1));
 				}
@@ -474,9 +481,9 @@ class Controller_App extends \Controller_Template
 			{
 				$fields = $form->validate();
 				
-				// if the extended class has defined 'edit_update' method, call it
+				// if the extended class has defined 'before_update' method, call it
 				// this method must return the updated data
-				$data = $this->edit_update($data, $fields);
+				$data = $this->before_update($data, $fields);
 				
 				foreach ($fields as $name => $val)
 				{
@@ -485,6 +492,7 @@ class Controller_App extends \Controller_Template
 			
 				if ($data->save())
 				{
+					$this->after_update();
 					Session::set_flash('success', 'Updated client #' . $id);
 					Response::redirect(\Uri::segment(1));
 				}
@@ -506,9 +514,13 @@ class Controller_App extends \Controller_Template
 	public function action_delete($id = null)
 	{
 		$model = $this->model;
+		$data = $model::find($id);
 		
-		if ( ! is_null($id) and $client = $model::find($id)->delete())
+		$this->before_delete($id);
+		
+		if ($data->delete())
 		{
+			$this->after_delete();
 			Session::set_flash('success', 'Record has successfully been deleted.');
 		}
 		else
