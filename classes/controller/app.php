@@ -27,8 +27,9 @@ class Controller_App extends \Controller_Template
 	// App page sidebars
 	public $sidebars = null;
 	
-	// Whether to use authentication for the page or not? default = true;
-	public $must_login = true;
+	// Whether to use authentication for the page or not?
+	// default = null, will load from config file
+	public $must_login = null;
 	
 	// array storing user info after logged in
 	protected $user = array();
@@ -40,7 +41,10 @@ class Controller_App extends \Controller_Template
 	protected $app_name = null;
 	
 	//
-	protected $view_display_columns = null;
+	protected $grid_columns = null;
+	
+	//
+	protected $view_columns = null;
 	
 
 	public static function _init()
@@ -114,17 +118,19 @@ class Controller_App extends \Controller_Template
 		$this->template->set('menu', Petro_Menu::render(static::$menu), false);
 	
 		// use uri segment to find ref_type from defined menu for later use
-		$menu = Petro_Menu::find(Uri::segment(1), static::$menu);
+		$menu = Petro_Menu::find(\Uri::segment(1), static::$menu);
 		$this->ref_type = $menu['menu_id'];
 
 		// if page_title is not set, default to menu label
 		if ( ! isset($this->template->page_title))
 		{
-			$this->template->page_title = $menu['label'];
+			$this->template->page_title = empty($menu['label']) ? \Inflector::pluralize($this->app_name) : $menu['label'] ;
 		}
 	
 		$this->sidebars = new Petro_Sidebar();
 
+		is_null($this->must_login) and $this->must_login = \Config::get('petro.auth.enable');
+		
 		// if require login and not in the ignore login list, then check for login
 		if ($this->must_login and !in_array(\Uri::string(), static::$ignore_login))
 		{
@@ -152,10 +158,10 @@ class Controller_App extends \Controller_Template
 	
 	private function render_breadcrumbs()
 	{
-		$uri = Uri::segments();
+		$uri = \Uri::segments();
 		
 		$base = 'Home';
-		$link = Uri::base();
+		$link = \Uri::base();
 		$sep = '/';
 		
 		$out = '<span class="breadcrumb">'.PHP_EOL;
@@ -361,9 +367,9 @@ class Controller_App extends \Controller_Template
 	 *
 	 */
 	 
-	protected function setup_index() {}
+	protected function setup_index($grid) {}
 	
-	protected function setup_view($id) {}
+	protected function setup_view($data) {}
 	
 	public function before_insert($validated_input) {}
 	
@@ -391,13 +397,13 @@ class Controller_App extends \Controller_Template
 	{
 		$grid = new Petro_Grid($this->model);
 
-		$this->setup_index();
+		$this->setup_index($grid);
 		
 		$this->action_items = array(
 			array('title' => 'Add New '.$this->app_name, 'link' => Petro::get_routes('new')),
 		);
 
-		$this->template->set('content', $grid->render(), false);
+		$this->template->set('content', $grid->render($this->grid_columns), false);
 	}
 
 	public function action_view($id = null)
@@ -409,10 +415,10 @@ class Controller_App extends \Controller_Template
 
 		$out .= Petro::render_panel(
 			$this->app_name.' Information',
-			Petro::render_attr_table($data,	$this->view_display_columns)
+			Petro::render_attr_table($data,	$this->view_columns)
 		);
 		
-		$out .= $this->setup_view($id);
+		$out .= $this->setup_view($data);
 
 		$routes = Petro::get_routes($id);
 		$this->action_items = array(
@@ -463,7 +469,7 @@ class Controller_App extends \Controller_Template
 			}
 		}
 
-		$this->template->page_title = "New ".\Inflector::classfy(Uri::segment(1));
+		$this->template->page_title = "New ".\Inflector::classify(\Uri::segment(1));
 		$this->template->set('content', $form->build(), false);
 	}
 	
@@ -507,7 +513,7 @@ class Controller_App extends \Controller_Template
 			}
 		}
 		
-		$this->template->page_title = "Edit ".\Inflector::classfy(Uri::segment(1));
+		$this->template->page_title = "Edit ".\Inflector::classify(\Uri::segment(1));
 		$this->template->set('content', $form->build($data), false);
 	}
 	

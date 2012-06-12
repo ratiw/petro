@@ -30,8 +30,9 @@ return array(
 	'use_routes' => true,
 	
 	'auth' => array(
+		'enable' => true,
 		// the following urls are automatically ignore, you don't need to add it to the ignore list
-		'url' => array(
+		'url'  => array(
 			'login'  => 'users/login',
 			'logout' => 'users/logout',
 			'signup' => 'users/signup',
@@ -40,18 +41,6 @@ return array(
 		'ignore' => array(
 			// put url to be ignored here
 		),
-	),
-	
-	'auth_url' => array(
-		'login'  => 'users/login',
-		'logout' => 'users/logout',
-		'signup' => 'users/signup',
-	),
-	
-	'ignore_login' => array(
-		'users/login',
-		'users/logout',
-		'users/signup',
 	),
 	
 	'lookup' => array(
