@@ -130,6 +130,12 @@ class Petro_Form
 			}
 		}
 		
+		// editable attribute
+		if ( ! isset($form['editable']))
+		{
+			$form['editable'] = true;
+		}
+		
 		if (empty($label))
 		{
 			$label = \Lang::get($name) ?: \Inflector::humanize($name);
@@ -199,7 +205,7 @@ class Petro_Form
 		}
 	}
 
-	public function build($data = array())
+	public function build($data = array(), $edit_mode = false)
 	{
 		if ($this->check_csrf)
 		{
@@ -237,12 +243,17 @@ class Petro_Form
 			{
 				$value = \Input::post($f, ! empty($data) ? $data->$f : '');
 			}
-			$label = $props['label'];
-			$form = $props['form'];
-			$type = isset($form['type']) ? $form['type'] : 'input';
+			$label   = $props['label'];
+			$form    = $props['form'];
+			$type    = isset($form['type']) ? $form['type'] : 'input';
 			$options = isset($form['options']) ? $form['options'] : array();
-			$attr = isset($form['attr']) ? $form['attr'] : array();
-			$errors = $this->error();
+			$attr    = isset($form['attr']) ? $form['attr'] : array();
+			$errors  = $this->error();
+			
+			if ($edit_mode and ! $form['editable'] and ! array_key_exists('readonly', $attr))
+			{
+				$attr['readonly'] = 'readonly';
+			}
 
 			switch ($type)
 			{

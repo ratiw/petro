@@ -118,7 +118,7 @@ class Petro_Grid
 			if ($found_id)
 			{
 				// automatically add record actions column
-				$this->columns[] = static::default_actions();
+				$this->columns['_actions_'] = static::default_actions();
 			}
 		}
 		catch (Exception $e)
@@ -188,11 +188,11 @@ class Petro_Grid
 		}
 		
 		// grid defaults
-		$visible  = isset($grid['visible']) ? $grid['visible'] : true;
+		$visible  = isset($grid['visible'])  ? $grid['visible']  : true;
 		$sortable = isset($grid['sortable']) ? $grid['sortable'] : false;
-		$align    = isset($grid['align']) ? $grid['align'] : 'left';
-		$process  = isset($grid['process']) ? $grid['process'] : null;
-		$format   = isset($grid['format']) ? $grid['format'] : null;
+		$align    = isset($grid['align'])    ? $grid['align']    : 'left';
+		$process  = isset($grid['process'])  ? $grid['process']  : null;
+		$format   = isset($grid['format'])   ? $grid['format']   : null;
 
 		$col = array(
 			'name'       => $name,
@@ -464,7 +464,7 @@ class Petro_Grid
 		return false;
 	}
 	
-	public function create_grid($columns = null) //$page = null, $order = null, $scope = null, $filters = null)
+	public function create_grid($columns = null)
 	{
 		$t = static::$template['grid'];
 		$grid  = $t['wrapper_start'];
@@ -535,7 +535,7 @@ class Petro_Grid
 	public function create_grid_body($columns = null)
 	{
 		isset($columns) or $columns = array_keys($this->columns);
-	
+		
 		$data = $this->fetch_data();
 	
 		$body = '';
@@ -546,14 +546,13 @@ class Petro_Grid
 		{
 			$body .= $t['table_body_row_'.$alt(false).'_start'];
 			
-			// foreach ($this->columns as $col => $prop)
 			foreach ($columns as $col)
 			{
 				$prop = $this->columns[$col];
 				$form = $prop['form'];
 				$grid = $prop['grid'];
 				
-				if (isset($grid['visible']) and $grid['visible'] == false)
+				if ((isset($grid['visible']) and $grid['visible'] == false))
 				{
 					continue;
 				}
@@ -568,20 +567,21 @@ class Petro_Grid
 						$value = $form['options'][$item->$prop['name']];
 					}
 				}
-				elseif (isset($grid['process']) and !empty($grid['process']))
+				else
+				{
+					$value = isset($item->$prop['name']) ? $item->$prop['name'] : '';
+				}
+
+				if (isset($grid['process']) and !empty($grid['process']))
 				{
 					if ($grid['process'] instanceof \Closure)
 					{
-						$value = $grid['process']($item);
+						$value = $grid['process']($item, $value);
 					}
 					elseif (is_string($grid['process']))
 					{
-						$value = call_user_func(array($this->model, $grid['process']), $item);
+						$value = call_user_func(array($this->model, $grid['process']), $item, $value);
 					}
-				}
-				else
-				{
-					$value = $item->$prop['name'];
 				}
 				
 				// handle 'format' options
@@ -602,35 +602,84 @@ class Petro_Grid
 		return $t['table_body_start'].$body.$t['table_body_end'];
 	}
 	
-	public static function format($format, $value)
+	public static function format(&$format, $value)
 	{
 		if (is_null($format))
 		{
 			return $value;
 		}
-
-		$type = is_array($format) ? $format['type'] : $format;
 		
-		switch (\Str::lower($type))
+		if ( ! is_array($format))
+		{
+			$format = static::parse_format($format);
+		}
+
+		switch ($format['type'])
 		{
 			case 'number':
-				$p = is_array($format) ? $format['param'] : \Config::get('petro.grid.format_number');
+				$p = $format['param'];
 				$value = number_format($value, $p[0], $p[1], $p[2]);
 				break;
 			case 'date':
-				$from  = is_array($format) ? $format['from'] : \Config::get('petro.grid.format_date_from');
-				$to    = is_array($format) ? $format['to'] : \Config::get('petro.grid.format_date_to');
-				$value = Petro::convert_date($value, $from, $to);
+				$value = Petro::convert_date($value, $format['from'], $format['to']);
 				break;
 			default:
-				$template = is_array($format) ? $format['template'] : $format;
-				$value = str_replace('{text}', $value, $template);
+				$value = str_replace('{value}', $value, $format['type']);
 		}
 		
 		return $value;
 	}
 	
-	/* TODO */
+	protected static function parse_format($format)
+	{
+		// parse type : param
+		$format = explode(':', $format);
+		
+		$type = $format[0];
+		$param = isset($format[1]) ? explode('|', $format[1]) : array();
+		
+		$arr = array();
+		$arr['type'] = \Str::lower(trim($type));
+		
+		switch ($arr['type'])
+		{
+			case 'date':
+				if (empty($param))
+				{
+					$arr['from'] = \Config::get('petro.grid.format_date_from');
+					$arr['to']   = \Config::get('petro.grid.format_date_to');
+				}
+				elseif (count($param) == 1)
+				{
+					$arr['from'] = \Config::get('petro.grid.format_date_from');
+					$arr['to']   = $param[0];
+				}
+				elseif (count($param) == 2)
+				{
+					$arr['from'] = $param[0];
+					$arr['to']   = $param[1];
+				}
+				break;
+				
+			case 'number':
+				$def_format = \Config::get('petro.grid.format_number');
+				if (empty($param))
+				{
+					$arr['param'] = $def_format;
+				}
+				else
+				{
+					$d  = isset($param[0]) ? $param[0] : $def_format[0];
+					$dp = isset($param[1]) ? $param[1] : $def_format[1];
+					$ts = isset($param[2]) ? $param[2] : $def_format[2];
+					$arr['param'] = array($d, $dp, $ts);
+				}
+				break;
+		}
+	
+		return $arr;
+	}
+	
 	public function create_grid_summary($columns = null)
 	{
 		if (count($this->summary) < 1)
@@ -682,7 +731,7 @@ class Petro_Grid
 		return $t['table_summary_start'].$t['table_summary_row_start'].$foot.$t['table_summary_row_end'].$t['table_summary_end'].PHP_EOL;
 	}
 	
-	private function fetch_data($scope = null) //, $filters = null)
+	private function fetch_data($scope = null)
 	{
 		$query = $this->setup_query($scope);
 		
@@ -1037,7 +1086,7 @@ class Petro_Grid
 	
 	public static function default_actions()
 	{
-		return array('label' => '', 'form' => array(),
+		return array('name' => '_actions_', 'label' => '', 'form' => array(),
 			'grid' => array('process' => function($data) {
 				$routes = Petro::get_routes($data->id);
 
