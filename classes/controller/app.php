@@ -46,6 +46,9 @@ class Controller_App extends \Controller_Template
 	//
 	protected $view_columns = null;
 	
+	// 
+	protected $form_columns = null;
+	
 
 	public static function _init()
 	{
@@ -233,27 +236,27 @@ class Controller_App extends \Controller_Template
 				if ($valid_login)
 				{
 					$user = \Auth::instance()->get_user_array();
-					Session::set('user_info', array(
+					\Session::set('user_info', array(
 						'id'         => $user['id'], 
 						'username'   => $user['username'],
 						'email'      => $user['email'],
 						'first_name' => $user['metadata']['first_name'],
 						'last_name'  => $user['metadata']['last_name'],
 					));
-					Session::set_flash('success', 'Welcome, '.$val->validated('username'));
-					$url = Session::get('redirect_url', '/');
+					\Session::set_flash('success', 'Welcome, '.$val->validated('username'));
+					$url = \Session::get('redirect_url', '/');
 					\Session::delete('redirect_url');
 					\Response::redirect($url);
 				}
 				else
 				{
 					$data['username'] = $val->validated('username');
-					Session::set_flash('error', 'Wrong username/password. Try again');
+					\Session::set_flash('error', 'Wrong username/password. Try again');
 				}
 			}
 			else
 			{
-				Session::set_flash('error', 'Please correct the error(s).');
+				\Session::set_flash('error', 'Please correct the error(s).');
 				$this->template->set_global('errors', $val->error());
 			}
 		}
@@ -297,7 +300,7 @@ class Controller_App extends \Controller_Template
 			{
 				// $user = \Sentry::user($user_id)->add_to_group('users');
 				
-				Session::set_flash('notice', 'User created.');
+				\Session::set_flash('notice', 'User created.');
 				\Response::redirect('users');
 			}
 			else
@@ -350,11 +353,11 @@ class Controller_App extends \Controller_Template
 
 				if (Petro_Comment::save($comment))
 				{
-					Session::set_flash('notice', 'Comment was successfully created.');
+					\Session::set_flash('notice', 'Comment was successfully created.');
 				}
 				else
 				{
-					Session::set_flash('error', 'Could not add new comment.');
+					\Session::set_flash('error', 'Could not add new comment.');
 				}
 			}
 		}
@@ -367,15 +370,16 @@ class Controller_App extends \Controller_Template
 	 *
 	 */
 	 
-	protected function setup_index($grid) {}
+	// note the pass-by-reference declaration
+	protected function setup_index(&$grid) {}
 	
-	protected function setup_view($data) {}
+	protected function setup_view(&$data) {}
 	
-	public function before_insert($validated_input) {}
+	public function before_insert(&$validated_input) {}
 	
 	public function after_insert() {}
 	
-	public function before_update($data, $validated_input) {}
+	public function before_update(&$data, &$validated_input) {}
 	
 	public function after_update() {}
 	
@@ -443,11 +447,11 @@ class Controller_App extends \Controller_Template
 		{
 			if ($form->validation()->run() === true)
 			{
-				$fields = $form->validated();
+				$fields = \Input::post();
 
 				// if the extended class define 'create_new' method, call it
 				// this method must return the updated data
-				$fields = $this->before_insert($fields);
+				$this->before_insert($fields);
 				
 				$model = $this->model;
 				$data = $model::forge($fields);
@@ -455,12 +459,12 @@ class Controller_App extends \Controller_Template
 				if ($data and $data->save())
 				{
 					$this->after_insert();
-					Session::set_flash('success', 'Data has been added successfully.');
-					Response::redirect(\Uri::segment(1));
+					\Session::set_flash('success', 'Data has been added successfully.');
+					\Response::redirect(\Uri::segment(1));
 				}
 				else
 				{
-					Session::set_flash('error', 'Could not create new record.');
+					\Session::set_flash('error', 'Could not create new record.');
 				}
 			}
 			else
@@ -469,6 +473,8 @@ class Controller_App extends \Controller_Template
 			}
 		}
 
+		isset($this->form_columns) and $form->sequence($this->form_columns);
+		
 		$this->template->page_title = "New ".\Inflector::classify(\Uri::segment(1));
 		$this->template->set('content', $form->build(), false);
 	}
@@ -485,26 +491,30 @@ class Controller_App extends \Controller_Template
 		{
 			if ($form->validation()->run() === true)
 			{
-				$fields = $form->validate();
+				$fields = \Input::post();
 				
 				// if the extended class has defined 'before_update' method, call it
 				// this method must return the updated data
-				$data = $this->before_update($data, $fields);
+				$this->before_update($data, $fields);
 				
 				foreach ($fields as $name => $val)
 				{
-					$data->$name = $val;
+					$prop_name = $model::property($name);
+					if (isset($prop_name))
+					{
+						$data->$name = $val;
+					}
 				}
 			
 				if ($data->save())
 				{
 					$this->after_update();
-					Session::set_flash('success', 'Updated client #' . $id);
-					Response::redirect(\Uri::segment(1));
+					\Session::set_flash('success', 'The record has been updated.');
+					\Response::redirect(\Uri::segment(1));
 				}
 				else
 				{
-					Session::set_flash('error', 'Could not update client #' . $id);
+					\Session::set_flash('error', 'Could not update record.');
 				}
 			}
 			else
@@ -513,8 +523,10 @@ class Controller_App extends \Controller_Template
 			}
 		}
 		
+		isset($this->form_columns) and $form->sequence($this->form_columns);
+		
 		$this->template->page_title = "Edit ".\Inflector::classify(\Uri::segment(1));
-		$this->template->set('content', $form->build($data), false);
+		$this->template->set('content', $form->build($data, true), false);
 	}
 	
 	public function action_delete($id = null)
@@ -527,14 +539,14 @@ class Controller_App extends \Controller_Template
 		if ($data->delete())
 		{
 			$this->after_delete();
-			Session::set_flash('success', 'Record has successfully been deleted.');
+			\Session::set_flash('success', 'Record has successfully been deleted.');
 		}
 		else
 		{
-			Session::set_flash('error', 'Could not delete data.');
+			\Session::set_flash('error', 'Could not delete data.');
 		}
 
-		Response::redirect(\Uri::segment(1));
+		\Response::redirect(\Uri::segment(1));
 
 	}
 
