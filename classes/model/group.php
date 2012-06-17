@@ -43,10 +43,10 @@ class Model_Group extends \Orm\Model
 				'sortable'  => true,
 				'align' 	 => 'left',
 				// 'process' => 'to_be_called',
-				'format' 	 => '<span class="label">{text}</span>',
+				'format' 	 => '<span class="label">{value}</span>',
 				// 'format'  => 'number' | array('type' => 'number', 'param' => array(2, '.', ',')),
 				// 'format'  => 'date' | array('type' => 'date', 'from' => 'xxxxx', 'to' => 'yyyyy'),
-				// 'format'  => template | array('type' => 'text', 'template' => '<span class=\"label\">{text}</span>'),
+				// 'format'  => template | array('type' => 'text', 'template' => '<span class=\"label\">{value}</span>'),
 			),
 		),
 	);
