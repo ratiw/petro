@@ -10,13 +10,13 @@ you write this code in a Controller?
 
 and you get this!
 
-<img src="/petro/assets/img/grid1.png"/ alt="Petro_Grid image" width="60%">
+<img src="{base_url}/assets/img/grid1.png"/ alt="Petro_Grid image" width="60%">
 
 _Would it be nice?_  
 
 And if you add a few more lines, you get this!
 
-<img src="/petro/assets/img/grid2.png"/ alt="Petro_Grid image" width="80%">
+<img src="{base_url}/assets/img/grid2.png"/ alt="Petro_Grid image" width="80%">
 
 
 ------------------------------------------
@@ -45,6 +45,10 @@ Petro_Grid has many features that can help ...
 			- define as Closure inside Controller
 			- define as function name inside the Model to be called during grid rendering
 		- format (number, date, ??) -- will run after 'process'
+
+				// 'format'  => 'number' | array('type' => 'number', 'param' => array(2, '.', ',')),
+				// 'format'  => 'date' | array('type' => 'date', 'from' => 'xxxxx', 'to' => 'yyyyy'),
+				// 'format'  => template | array('type' => 'text', 'template' => '<span class=\"label\">{text}</span>'),
 		
 2. Call and initialize the grid
 
@@ -66,4 +70,8 @@ Petro_Grid has many features that can help ...
 
 
 
-
+## Grid Settings
+- Pagination
+- Page Info
+- Filters
+- Scopes

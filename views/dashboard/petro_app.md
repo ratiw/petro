@@ -1,6 +1,6 @@
 # Petro App
 
-- Extend Petro\Controller_Common (will be changed to Petro\Controller)
+- Extend Petro\Controller_App
 - That's it! Check it out!!
 
 ### Petro App Controller
@@ -62,3 +62,6 @@ Just remember that when you override the predefine method, the related callback 
 you have to call it manually. Also, some interface elements, like `action_items` will not be displayed automatically 
 as well. But you can always do it manually. Just follows instructions on another section.
 
+"Authentication, suport?"
+- $must_login
+- config `auth`

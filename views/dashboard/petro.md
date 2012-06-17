@@ -9,13 +9,13 @@ Petro is like a small application framework, where you can config the content of
 
 Petro provides a Controller template for you to work on
 
-* [__Petro_Grid__](index/petro_grid)  
+* [__Petro_Grid__]({base_url}dashboard/petro_grid)  
 * __Petro_Menu__  
 * __Petro_Sidebar__  
-* __Petro_Lookup__  
+* [__Petro_Lookup__]({base_url}dashboard/petro_lookup)
 * __Petro_Comment__  
-* __Petro_Form__  
-* together they form a _RAD Environment_ -- __Petro_App__
+* [__Petro_Form__]({base_url}dashboard/petro_form)
+* together they form a _RAD Environment_ -- [__Petro_App__]({base_url}dashboard/petro_app)
 
 -------------------------------------------------
 
@@ -94,7 +94,7 @@ The `RewriteBase` line is required for it to work on my notebook running WAMP on
 ## Petro Facility
 
 - App framework
-	- Template (fuel\app\view\), Common controller (fuel\app\classes\controller\)
+	- Template (PKGPATH\petro\view\template.php), App controller (PKGPATH\petro\classes\controller\app.php)
 	- Index
 	- View
 	- Create
@@ -121,7 +121,7 @@ The `RewriteBase` line is required for it to work on my notebook running WAMP on
 2. Create corresponding Model
 	- define $_properties as public static
 	- describe your model here, data_type, validation, label, form, etc.
-3. Create a controller by extending from Controller_Common
+3. Create a controller by extending from Petro\Controller_App
 	- set $ref_type for comment system
 	- action_index() should receive the following arguments
 		- $curr_page = 1
