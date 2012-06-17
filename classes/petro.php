@@ -2,7 +2,6 @@
 
 namespace Petro;
 
-use Date;
 use DateTime;
 use DB;
 use Form;
@@ -62,7 +61,7 @@ class Petro
 		{
 			return "No data to display.";
 		}
-
+		
 		if ( ! isset($columns))
 		{
 			$columns = $data->properties();
@@ -78,64 +77,71 @@ class Petro
 			// try to determine the label from its name first, unless the user override it later
 			$label = \Lang::get($name) ?: \Inflector::humanize($name);
 			
-			if ($prop instanceof \Closure)
+			if ( ! $data instanceof \Orm\Model)
+			{
+				$value = $data->$name;
+			}
+			elseif ($prop instanceof \Closure)
 			{
 				$value = $prop($data);
 			}
 			else
 			{
-				if ( ! is_array($prop) and ! $data instanceof \Orm\Model)
-				{
-					$value = $data->$name;
-				}
-				else // if it is array, it must be read from Model's properties
-				{
-					$prop = $data->property($name);
-					$form = isset($prop['form']) ? $prop['form'] : array();
-					$grid = isset($prop['grid']) ? $prop['grid'] : array();
+				$old_prop = $prop;
+				$prop = array_merge($data->property($name, array()), (array) $prop);
 				
-					isset($prop['label']) and $label = $prop['label'];
-					
-					if (isset($form['type']) and $form['type'] == 'select')
+				$form = isset($prop['form']) ? $prop['form'] : array();
+				$grid = isset($prop['grid']) ? $prop['grid'] : array();
+				
+				isset($prop['label']) and $label = $prop['label'];
+				
+				if (isset($form['type']) and $form['type'] == 'select')
+				{
+					if (isset($form['lookup']) and ! isset($form['options']))
 					{
-						if (isset($form['lookup']) and ! isset($form['options']))
+						if ( ! is_array($form['lookup']))
 						{
-							if ( ! is_array($form['lookup']))
-							{
-								$form['options'] = Petro_Lookup::get($form['lookup']);
-							}
-						}
-						
-						if (isset($form['options']))
-						{
-							foreach ($form['options'] as $key => $val)
-							{
-								$form['options'][$key] = \Lang::get($val) ?: $val;
-							}
+							$form['options'] = Petro_Lookup::get($form['lookup']);
 						}
 					}
+					
+					if (isset($form['options']))
+					{
+						foreach ($form['options'] as $key => $val)
+						{
+							$form['options'][$key] = \Lang::get($val) ?: $val;
+						}
+					}
+				}
 
-					if ( ! empty($form['options']))
+				if ( ! empty($form['options']))
+				{
+					$value = $form['options'][$data->$name];
+				}
+				else
+				{
+					$value = isset($data->$name) ? $data->$name : '';
+				}
+				
+				if (isset($grid['process']) and ! empty($grid['process']))
+				{
+					if ($grid['process'] instanceof \Closure)
 					{
-						$value = $form['options'][$data->$name];
+						$value = $grid['process']($data, $value);
 					}
-					else
+					elseif (is_string($grid['process']))
 					{
-						$value = $data->$name;
+						$model = get_class($data);
+						$value = call_user_func(array($model, $grid['process']), $data, $value);
 					}
-					
-					if (isset($grid['format']))
-					{
-						$value = Petro_Grid::format($grid['format'], $value);
-					}
+				}
+				
+				if (isset($grid['format']))
+				{
+					$value = Petro_Grid::format($grid['format'], $value);
 				}
 			}
 
-			if (in_array($name, array('created_at', 'updated_at')))
-			{
-				$value = Date::forge($value)->format(\Config::get('petro.date_format'));
-			}
-			
 			$out .= static::render_attr_table_row($label, $value);
 		}
 		
@@ -224,7 +230,7 @@ class Petro
 		
 		foreach ($filters as $name => $prop)
 		{
-			if ( isset($prop['label']) )
+			if (isset($prop['label']))
 			{
 				$label = $prop['label'];
 			}
@@ -233,6 +239,13 @@ class Petro
 				$label = \Lang::get($name) ?: \Inflector::humanize($name);
 			}
 
+			if (isset($prop['collection']) and is_string($prop['collection']))
+			{
+				$model = get_real_class($prop['collection']);
+				$arr = $model::property($name, array());
+				$prop['collection'] = isset($arr['form']['options']) ? $arr['form']['options'] : array();
+			}
+			
 			$out .= '<div class="filter-'.$prop['type'].'">'.PHP_EOL;
 
 			switch(\Str::lower($prop['type']))
@@ -474,9 +487,6 @@ class Petro
 			return $input;
 		}
 		
-		// $date = DateTime::createFromFormat(\Config::get('app_date_format'), $input);
-		// return $date->format(\Config::get('db_date_format'));
-		
 		$from = \Config::get('petro.app_date_format');
 		$to   = \Config::get('petro.db_date_format');
 		return static::convert_date($input, $from, $to);
@@ -488,9 +498,6 @@ class Petro
 		{
 			return '';
 		}
-		
-		// $date = DateTime::createFromFormat(\Config::get('db_date_format'), $input);
-		// return $date->format(\Config::get('app_date_format'));
 		
 		$from = \Config::get('petro.db_date_format');
 		$to   = \Config::get('petro.app_date_format');
