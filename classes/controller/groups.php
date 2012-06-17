@@ -4,29 +4,29 @@ namespace Petro;
 
 class Controller_Groups extends Controller_App
 {
-	public function action_index()
-	{
-		$grid = new Petro_Grid('Model_Group');
-		$data['index_content'] = $grid->render();
+	// public function action_index()
+	// {
+		// $grid = new Petro_Grid('Model_Group');
+		// $data['index_content'] = $grid->render();
 		
-		$this->action_items = array(
-			array('title' => 'Add New Group', 'link' => Petro::get_routes('new')),
-		);
+		// $this->action_items = array(
+			// array('title' => 'Add New Group', 'link' => Petro::get_routes('new')),
+		// );
 		
-		$this->template->content = \View::forge('groups/index', $data, false);
-	}
+		// $this->template->content = \View::forge('groups/index', $data, false);
+	// }
 	
-	public function action_view($id = null)
-	{
-		$group = \Model_Group::find($id);
+	// public function action_view($id = null)
+	// {
+		// $group = \Model_Group::find($id);
 		
-		$data = Petro::render_panel(
-			'Group Information',
-			Petro::render_attr_table($group)
-		);
+		// $data = Petro::render_panel(
+			// 'Group Information',
+			// Petro::render_attr_table($group)
+		// );
 		
-		$this->template->set('content', $data, false);
-	}
+		// $this->template->set('content', $data, false);
+	// }
 	
 	protected function setup_form()
 	{

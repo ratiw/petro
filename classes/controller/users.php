@@ -19,7 +19,7 @@ class Controller_Users extends Controller_App
 			'name' => array(
 				'label' => 'Name',
 				'grid' => array(
-					'process' => function($data) {
+					'process' => function($data, $value) {
 						$prof = unserialize($data->profile_fields);
 						return $prof['first_name'].' '.$prof['last_name'];
 					},
@@ -30,7 +30,7 @@ class Controller_Users extends Controller_App
 				'grid' => array(
 					'visible' => true, 
 					'sortable' => true,
-					'process' => function($data) {
+					'process' => function($data, $value) {
 						return static::$groups[$data->group];
 					},
 				)
@@ -41,7 +41,7 @@ class Controller_Users extends Controller_App
 				'grid' => array(
 					'visible' => true, 
 					'sortable' => false,
-					'process' => function($data) {
+					'process' => function($data, $value) {
 						return empty($data->last_login) ? '<span class="label warning">Never</span>' : '<span class="label">'.\Date::forge($data->last_login)->format('%Y-%m-%d %H:%M').'</span>';
 					},
 				)
@@ -238,25 +238,6 @@ class Controller_Users extends Controller_App
 						),
 						\Input::post('username')
 					);
-					
-					// if ($update)
-					// {
-						// foreach (\Sentry::group()->all() as $g)
-						// {
-							// if (in_array($g['id'], $groups) and ! $user->in_group($g['id']))
-							// {
-								// $user->add_to_group($g['id']);
-							// }
-							// elseif ( ! in_array($g['id'], $groups) and $user->in_group($g['id']))
-							// {
-								// $user->remove_from_group($g['id']);
-							// }
-						// }
-					// }
-					// else
-					// {
-						// throw new \FuelException('Could note update user#'.$id.' ['.mysql_errno().'] '.mysql_error());
-					// }
 					
 					\DB::commit_transaction();
 					\Session::set_flash('success', 'User info successfully updated');

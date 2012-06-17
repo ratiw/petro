@@ -102,7 +102,7 @@ The `RewriteBase` line is required for it to work on my notebook running WAMP on
 # Petro Facility
 
 - App framework
-	- Template (fuel\app\view\), Common controller (fuel\app\classes\controller\)
+	- Template (PKGPATH\petro\view\template.php), App controller (PKGPATH\petro\classes\controller\app.php)
 	- Index
 	- View
 	- Create
@@ -128,7 +128,7 @@ How-to
 2. Create corresponding Model
 	- define $_properties as public static
 	- describe your model here, data_type, validation, label, form, etc.
-3. Create a controller by extending from Controller_Common
+3. Create a controller by extending from Petro\Controller_App
 	- set $ref_type for comment system
 	- action_index() should receive the following arguments
 		- $curr_page = 1

@@ -22,9 +22,10 @@ Autoloader::add_classes(array(
 	'Petro\\Petro_Form'        => __DIR__.'/classes/petro/form.php',
 	'Petro\\Petro_Menu'        => __DIR__.'/classes/petro/menu.php',
 	'Petro\\Petro_Comment'     => __DIR__.'/classes/petro/comment.php',
-	'Petro\\Controller_Common' => __DIR__.'/classes/controller/common.php',
+	'Petro\\Controller_App'    => __DIR__.'/classes/controller/app.php',
 	'Petro\\Controller_Users'  => __DIR__.'/classes/controller/users.php',
 	'Petro\\Controller_Groups' => __DIR__.'/classes/controller/groups.php',
+	'Petro\\Controller_Dashboard' => __DIR__.'/classes/controller/dashboard.php',
 	
 	'Petro\\Model_User'        => __DIR__.'/classes/model/user.php',
 	'Petro\\Model_Group'       => __DIR__.'/classes/model/group.php',

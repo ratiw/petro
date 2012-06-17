@@ -3,6 +3,8 @@ namespace Petro;
 
 class Controller_Dashboard extends Controller_App
 {
+	public $must_login = false;
+
 	public function action_index($page = 'petro')
 	{
 		$md = $this->load_markdown('dashboard/'.$page);
