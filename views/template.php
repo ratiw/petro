@@ -5,17 +5,14 @@
 	<title>APP Title</title>
 	
 	<?php 
-		// echo Asset::css(array('active_admin.css', 'admin.css')); 
 		echo Asset::css('bootstrap.min.css');
-		echo Asset::css('ui-lightness/jquery-ui-1.8.16.custom.css');
+		echo Asset::css('ui-lightness/jquery-ui-1.8.21.custom.css');
 		echo Asset::css('petro.css');
 		echo Asset::css('markdown.css');
-		// echo Asset::js('jquery-1.7.1.min.js');
-		echo Asset::js('http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js');
-		// echo Asset::js('jquery-ui-1.8.16.custom.min.js');
-		echo Asset::js('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js');
+		echo Asset::js('jquery-1.7.2.min.js');
+		echo Asset::js('jquery-ui-1.8.21.custom.min.js');
 		echo Asset::js('bootstrap.min.js');
-		echo Asset::js('bootstrap-typeahead.js');
+		// echo Asset::js('bootstrap-typeahead.js');
 	?>
 	<script>
 		$(document).ready(function() {
