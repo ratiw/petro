@@ -1,3 +1,16 @@
+/* override bootstrap */
+select, textarea, 
+input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], 
+input[type="date"], input[type="month"], input[type="time"], input[type="week"], 
+input[type="number"], input[type="email"], input[type="url"], input[type="search"], 
+input[type="tel"], input[type="color"], .uneditable-input {
+	padding: 7px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+}
+/* ------------------ */
+
 	.topbar-inner {
 		background: #6A7176;
 		background: -webkit-gradient(linear, left top, left bottom, from(#6A7176), to(#4D5256));
@@ -15,11 +28,13 @@
 
 	.topbar div>ul .active>a,.nav .active>a{
 		background-color:#7B8389;background-color:rgba(123, 131, 131, 1);
-		// -webkit-border-radius: 4px;
-		// -moz-border-radius: 4px;
-		// border-radius: 4px;
-		// padding: 4px 10px 4px 10px;
-		// margin-top: 6px;
+		/* 
+		-webkit-border-radius: 4px;
+		-moz-border-radius: 4px;
+		border-radius: 4px;
+		padding: 4px 10px 4px 10px;
+		margin-top: 6px;
+		*/
 	}
 
 	header {
@@ -296,9 +311,11 @@
 	.panel { 
 		background: #F4F4F4;
 		border: 1px solid rgba(0,0,0,.2);
-		// box-shadow: 0 1px 2px rgba(0,0,0,.1);
-		// -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.1);
-		// -moz-box-shadow: 0 1px 2px rgba(0,0,0,.1);
+		/*
+		box-shadow: 0 1px 2px rgba(0,0,0,.1);
+		-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.1);
+		-moz-box-shadow: 0 1px 2px rgba(0,0,0,.1);
+		*/
 		-webkit-border-radius: 4px;
 		-moz-border-radius: 4px;
 		border-radius: 4px;
@@ -361,12 +378,12 @@
 	.panel form.form-vertical *> label {
 		text-transform: uppercase;
 		color: #5E6469;
-		// font-size: 0.8em;
+		/* font-size: 0.8em; */
 		font-weight: bold;
 	}
 	
 	form.form-horizontal label.control-label { 
-		//text-align: left;
+		/* text-align: left; */
 		font-size: 1.0em;
 		font-weight: bold;
 		color: #5E6469
@@ -406,10 +423,12 @@
 		border: none;
 		color: #efefef;
 	}
-	// .span-half { width: 44.0%; }
-	// .span-full { width: 94.1%;}
-	// .span-one-third-fluid{width:27.33%}
-	// .span-two-thirds-fluid{width:62.46%}
+	/*
+	.span-half { width: 44.0%; }
+	.span-full { width: 94.1%;}
+	.span-one-third-fluid{width:27.33%}
+	.span-two-thirds-fluid{width:62.46%}
+	*/
 
 	.comments .active_admin_comment {
 	  clear: both;
@@ -523,7 +542,7 @@
 		margin-bottom: 0px;
 	}
 	 
-	// use in Petro_Grid
+	/* use in Petro_Grid */
 	.align-left {
 	  text-align: left; }
 	.align-center {
