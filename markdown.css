@@ -1,0 +1,15 @@
+div.markdown {
+	
+}
+div.markdown h1, h2, h3, h4, h5 {
+	margin-bottom: 10px;
+}
+div.markdown p {
+	margin: inherit;
+}
+div.markdown ul li {
+	margin-bottom: 8px;
+}
+div.markdown ol li {
+	margin-bottom: 8px;
+}
