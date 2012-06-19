@@ -75,19 +75,19 @@ class Controller_Users extends Controller_App
 		);
 
 		// $this->template->page_title = "Users";
-		$this->template->content = \View::forge('users/index2', $data, false);
+		$this->template->set('content', $grid->render(), false);
 	}
 	
 	public function action_view($id = null)
 	{
 		$user = \Model_User::find($id);
 		
-		$data['user'] = Petro::render_panel(
+		$out = Petro::render_panel(
 			'User Information',
 			Petro::render_attr_table($user, array('username', 'email', 'created_at', 'updated_at'))
 		);
 		
-		$data['comments'] = Petro_Comment::render($this->ref_type, $id);
+		$out .= Petro_Comment::render($this->ref_type, $id);
 
 		$routes = Petro::get_routes($id);
 		$this->action_items = array(
@@ -96,8 +96,7 @@ class Controller_Users extends Controller_App
 		);
 		
 		$this->template->page_title = $user->username;
-		$this->template->content = \View::forge('users/view2', $data, false);
-
+		$this->template->set('content', $out, false);
 	}
 	
 	public function action_create($id = null)
@@ -136,7 +135,6 @@ class Controller_Users extends Controller_App
 					}
 					// else
 					// {
-						// throw new \FuelException('Could not create new user. ['.mysql_errno().'] '.mysql_error());
 						// throw new \FuelException('Could not create new user. ');
 					// }
 
@@ -158,7 +156,7 @@ class Controller_Users extends Controller_App
 		}
 
 		$this->template->page_title = "New User";
-		$this->template->content = \View::forge('users/create');
+		$this->template->set('content', render('users/_form'), false);
 	}
 
 	protected function setup_validation($edit_mode = false)
@@ -222,13 +220,6 @@ class Controller_Users extends Controller_App
 				{
 					\DB::start_transaction();
 					
-					// $update = $user->update(array(
-						// 'password' => \Input::post('password'),
-						// 'email'     => \Input::post('email'),
-						// 'first_name' => \Input::post('firstname'),
-						// 'last_name'  => \Input::post('lastname'),
-					// ));
-					
 					$update = \Auth::instance()->update_user(
 						array(
 							// 'password' => \Input::post('password'),
@@ -265,7 +256,7 @@ class Controller_Users extends Controller_App
 		}
 		
 		$this->template->page_title = "Edit User";
-		$this->template->content = \View::forge('users/edit');
+		$this->template->set('content', render('users/_form'), false);
 
 	}
 	
