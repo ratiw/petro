@@ -6,7 +6,7 @@
 	isset($errors) or $errors = array();
 ?>
 <?php echo Form::open(array('class' => 'form-horizontal')); ?>
-	<div class="row">
+	<div class="row-fluid">
 		<div class="well span8">
 			<?php 
 				echo Petro_Form::input('first_name', 
