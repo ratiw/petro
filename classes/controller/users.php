@@ -52,15 +52,12 @@ class Controller_Users extends Controller_App
 		return $columns;
 	}
 
-	public function action_index() //$curr_page = 1, $order_by = null, $scope = null, $filter = null)
+	public function action_index()
 	{
-		// $data['filter'] = \Input::param('q');
-
 		$grid = new Petro_Grid('Model_User', static::_columns());
 		// $grid = new Petro_Grid('Model_User', array('id', 'username', 'email'));
 
 		// $data['index_content'] = $grid->render(array('username', 'id', 'email'));
-		$data['index_content'] = $grid->render();
 		
 		$this->sidebars->add('Filters', 
 			Petro::render_filters(array(
@@ -95,6 +92,18 @@ class Controller_Users extends Controller_App
 			array('title' => 'Delete User', 'link' => $routes['delete']),
 		);
 		
+		$current_user = \Auth::instance()->get_user_id();
+		if ($id == $current_user[1])
+		{
+			$this->sidebars->add(
+				'Operations',
+				'<div>'
+					.\Html::anchor('users/change_password', 'Change password', array('class' => 'btn', 'style' => 'width:90%'))
+					.\Form::button('btn_reset_pwd', 'Reset password', array('class' => 'btn', 'style' => 'width:100%'))
+				.'</div>'
+			);
+		}
+
 		$this->template->page_title = $user->username;
 		$this->template->set('content', $out, false);
 	}
@@ -277,7 +286,67 @@ class Controller_Users extends Controller_App
 		\Response::redirect('users');
 
 	}
+
+	protected function setup_form_change_password()
+	{
+		$form = new Petro_Form();
+		$form->set_fields(array(
+			'old_password' => array(
+				'validation' => array('required'),
+				'form' => array('type' => 'password'),
+			),
+			'<hr/>',
+			'new_password' => array(
+				'validation' => array('required', 'min_length' => array(6)),
+				'form' => array('type' => 'password'),
+			),
+			'confirm_password' => array(
+				'validation' => array('match_field' => array('new_password')),
+				'form' => array('type' => 'password'),
+			),
+		));
+		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
+		$form->add_form_action(\Html::anchor('users', 'Cancel', array('class' => 'btn')));
+
+		return $form;
+	}
 	
+	public function action_change_password()
+	{
+		$form = $this->setup_form_change_password();
+		
+		if (\Input::method() == 'POST')
+		{
+			if ($form->validation()->run() === true)
+			{
+				$fields = \Input::post();
+				$current_user = \Auth::instance()->get_screen_name();
+				
+				$changed = \Auth::instance()->change_password($fields['old_password'], $fields['new_password'], $current_user);
+				try
+				{
+					if ($changed)
+					{
+						\Session::set_flash('success', 'Password has been changed.');
+						\Response::redirect('users');
+					}
+					else
+					{
+						$this->template->set_global('errors', array('old_password' => 'Old password is not correct.'), false);
+					}
+				}
+				catch (\FuelException $e)
+				{
+					\Session::set_flash('error', $e->getMessage());
+				}
+			}
+			else
+			{
+				$this->template->set_global('errors', $form->error(), false);
+			}
+		}
+		$this->template->set('content', $form->build(), false);
+	}
 }
 
 /* End of file users.php */
