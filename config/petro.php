@@ -9,7 +9,14 @@ return array(
 			'users' 	=> array('menu_id' => 210, 'label' => 'Users', 'link' => 'users'),
 			'groups' 	=> array('menu_id' => 220, 'label' => 'Groups', 'link' => 'groups'),
 		)),
-		'dropdown2' 	=> array('menu_id' => 500, 'label' => 'Dropdowns', 'submenu' => array(
+		'clients' 		=> array('menu_id' => 300, 'label' => 'Customers', 'link' => 'clients'),
+		'docmk' 		=> array('menu_id' => 400, 'label' => 'Sales Order', 'link' => 'docmk'),
+		'dropdown2' 	=> array('menu_id' => 410, 'label' => 'DOCmk2', 'link' => 'docmk2', 'submenu' => array(
+			'docmk2' 	=> array('menu_id' => 420, 'label' => 'FMMK-010', 'link' => 'docmk2'),
+			'mk011' 	=> array('menu_id' => 430, 'label' => 'FMMK-011', 'link' => 'docmk011'),
+		)),
+		'docmk011' 	=> array('menu_id' => 440, 'label' => 'Cutting Order', 'link' => 'docmk011'),
+		'products' 	=> array('menu_id' => 500, 'label' => 'Products', 'submenu' => array(
 			'mi1' 		=> array('menu_id' => 510, 'label' => 'Menu Item 1'),
 			'mi2' 		=> array('menu_id' => 520, 'label' => 'Menu Item 2'),
 			'mi3' 		=> array('menu_id' => 530, 'label' => 'Menu Item 3'),
@@ -48,6 +55,7 @@ return array(
 	),
 	
 	'form' => array(
+		'style'                 => 'form-horizontal',
 		'form_method'           => 'post',
 		'required_mark'         => '<span class="badge badge-error" {title}>{mark}</span>',
 		'inline_errors'         => false,
@@ -166,7 +174,7 @@ return array(
 		'form' => '
 			{open}
 				<div class="row-fluid">
-					<div class="well span8">
+					<div class="well">
 						{fields}
 						{form_buttons}
 					</div>
