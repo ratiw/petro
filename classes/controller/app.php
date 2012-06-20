@@ -235,7 +235,7 @@ class Controller_App extends \Controller_Template
 				$valid_login = \Auth::instance()->login($val->validated('username'), $val->validated('password'));
 				if ($valid_login)
 				{
-					$user = \Auth::instance()->get_user_array();
+					$user = \Auth::instance()->get_user_array(array('username'));
 					\Session::set('user_info', array(
 						'id'         => $user['id'], 
 						'username'   => $user['username'],
@@ -552,4 +552,4 @@ class Controller_App extends \Controller_Template
 
 }
 
-/* End of file common.php */
+/* End of file app.php */

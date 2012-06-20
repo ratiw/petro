@@ -14,10 +14,9 @@ class Model_User extends \Orm\Model {
 	public static $_properties = array(
 		'id',
 		'username' => array(
-			'data_type' => 'string',
 			'validation' => array('required'),
 			'grid' => array('visible' => true, 'sortable' => true),
-			'form' => array('data_type' => 'text'),
+			'form' => array('type' => 'text'),
 		),
 		'password',
 		'group',

@@ -4,33 +4,9 @@ namespace Petro;
 
 class Controller_Groups extends Controller_App
 {
-	// public function action_index()
-	// {
-		// $grid = new Petro_Grid('Model_Group');
-		// $data['index_content'] = $grid->render();
-		
-		// $this->action_items = array(
-			// array('title' => 'Add New Group', 'link' => Petro::get_routes('new')),
-		// );
-		
-		// $this->template->content = \View::forge('groups/index', $data, false);
-	// }
-	
-	// public function action_view($id = null)
-	// {
-		// $group = \Model_Group::find($id);
-		
-		// $data = Petro::render_panel(
-			// 'Group Information',
-			// Petro::render_attr_table($group)
-		// );
-		
-		// $this->template->set('content', $data, false);
-	// }
-	
 	protected function setup_form()
 	{
-		$form = new Petro_Form(array('class' => 'form-horizontal'));
+		$form = new Petro_Form();
 		$form->add_model('Model_Group');
 		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
 		$form->add_form_action(\Html::anchor('groups', 'Cancel', array('class' => 'btn')));
@@ -40,13 +16,6 @@ class Controller_Groups extends Controller_App
 	
 	public function action_create()
 	{
-		// Using FuelPHP's Fieldset
-		// $fieldset = \Fieldset::forge()->add_model('Model_Group');
-		// $form = $fieldset->form();
-		// $form->add('submit', '', array('type' => 'submit', 'value' => 'Add', 'class' => 'btn btn-primary'));
-		
-		// $this->template->set('content', $form->build(), false);
-		
 		$form = $this->setup_form();
 		
 		if (\Input::method() == 'POST')
@@ -83,7 +52,6 @@ class Controller_Groups extends Controller_App
 				$this->template->set_global('errors', $form->error(), false);
 			}
 		}
-		
 		$this->template->set('content', $form->build(), false);
 	}
 	
