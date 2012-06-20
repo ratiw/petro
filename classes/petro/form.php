@@ -32,8 +32,18 @@ class Petro_Form
 	
 	public function __construct($form_attr = array())
 	{
-		if ( ! empty($form_attr))
+		$form_style = \Config::get('petro.form.style');
+		
+		if (empty($form_attr))
 		{
+			$this->attributes['class'] = $form_style;
+		}
+		else
+		{
+			if ( ! isset($form_attr['class']))
+			{
+				$form_attr['class'] = $form_style;
+			}
 			$this->attributes = array_merge($this->attributes, $form_attr);
 		}
 	}
@@ -79,12 +89,21 @@ class Petro_Form
 	{
 		try
 		{
-			$class = is_object($model) ? get_class($model) : $model;
-		
-			$pk = is_object($model) ? $model->primary_key() : $model::primary_key();
-			$props = is_object($model) ? $model->properties() : $model::properties();
+			if (is_array($model))	// called from set_fields() passing array of defined fields
+			{
+				$pk = array();
+				$props = $model;
+			}
+			else	// called from add_model()
+			{
+				$pk = is_object($model) ? $model->primary_key() : $model::primary_key();
+				$props = is_object($model) ? $model->properties() : $model::properties();
+			}
+			
 			foreach ($props as $p => $settings)
 			{
+				is_int($p) and $p = $settings;
+				
 				$form = isset($settings['form']) ? $settings['form'] : array();
 				$rules = isset($settings['validation']) ? $settings['validation'] : array();
 				$label = isset($settings['label']) ? $settings['label'] : '';
@@ -103,6 +122,11 @@ class Petro_Form
 			throw new \FuelException('Cannot determin columns in model '.$this->model.
 				'Original exception: '.$e->getMessage());
 		}
+	}
+	
+	public function set_fields($fields)
+	{
+		return $this->grab_fields($fields);
 	}
 	
 	public function add_field($name, $label = '', $value = '', $form = array(), $rules = array())
@@ -166,10 +190,11 @@ class Petro_Form
 				$attr = isset($prop['form']['attr']) ? $prop['form']['attr'] : array();
 				if ( ! empty($prop['rules']))
 				{
-					$f = $this->validation->add($name, $prop['label']);
-					foreach ($prop['rules'] as $rule)
+					foreach ($prop['rules'] as $rule => $param)
 					{
-						$f->add_rule($rule);
+						is_int($rule) and $rule = $param;
+						$opt = is_array($param) ? '['.implode(',', $param).']' : '';
+						$this->validation->add_field($name, $prop['label'], $rule.$opt);
 					}
 				}
 			}
