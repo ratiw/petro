@@ -55,7 +55,7 @@ class Petro
 	 * 3 if $disp_columns contain Closure as its value, Closure will be called and
 	 *		the return value from Closure will be used
 	 */
-	public static function render_attr_table($data, $columns = null)
+	public static function render_attr_table($data, $columns = null, $col_def = array())
 	{
 		if ( ! isset($data))
 		{
@@ -88,7 +88,7 @@ class Petro
 			else
 			{
 				$old_prop = $prop;
-				$prop = array_merge($data->property($name, array()), (array) $prop);
+				$prop = array_merge($data->property($name, array()), (array) $prop, $col_def[$name]);
 				
 				$form = isset($prop['form']) ? $prop['form'] : array();
 				$grid = isset($prop['grid']) ? $prop['grid'] : array();
