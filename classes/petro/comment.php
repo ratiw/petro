@@ -27,9 +27,9 @@ class Petro_Comment
 			' ORDER BY '.static::$_table.'.created_at asc'
 		)->execute();
 		
-		$data['title'] = $title;
-		$data['ref_type']	= $ref_type;
-		$data['ref_id'] 	= $ref_id;
+		$data['title']    = $title;
+		$data['ref_type'] = $ref_type;
+		$data['ref_id']   = $ref_id;
 		$data['total_comments'] = count($query);
 		
 		if ( $data['total_comments'] <= 0 )
@@ -43,7 +43,7 @@ class Petro_Comment
 			foreach ($query as $item)
 			{
 				$author = isset($item['username']) ? $item['username'] : 'Anonymous';
-				$date = \Date::forge($item['created_at'])->format('%Y-%m-%d %H:%M');
+				$date = empty($item['created_at']) ? '' : \Date::forge($item['created_at'])->format('%Y-%m-%d %H:%M');
 				$cost = empty($item['cost']) ? '' : number_format($item['cost']);
 				
 				$out .= str_replace(array('{comment_id}', '{comment_author}', '{comment_date}', '{comment_text}', '{comment_cost}'), 
