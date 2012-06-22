@@ -12,6 +12,10 @@ class Auth_Group_PetroGroup extends \Auth_Group_Driver
 	
 	public static $_valid_groups = array();
 	
+	protected $config = array(
+		'drivers' => array('acl' => array('PetroAcl'))
+	);
+
 	public static function _init()
 	{
 		$query = \DB::select()->from(static::$table_name)->order_by('level')->execute();
@@ -60,5 +64,19 @@ class Auth_Group_PetroGroup extends \Auth_Group_Driver
 		}
 		
 		return static::$_valid_groups[$group]['name'];
+	}
+	
+	public function get_level($group = null)
+	{
+		if ($group === null)
+		{
+			if ( ! $login = \Auth::instance() or ! is_array($groups = $login->get_groups()))
+			{
+				return false;
+			}
+			$group = isset($groups[0][1]) ? $groups[0][1] : null;
+		}
+		
+		return $group;
 	}
 }
