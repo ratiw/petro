@@ -20,7 +20,9 @@ class Model_User extends \Orm\Model {
 		),
 		'password',
 		'group',
-		'email',
+		'email' => array(
+			'validation' => array('valid_email'),
+		),
 		'last_login',
 		'profile_fields',
 		'created_at' => array(
