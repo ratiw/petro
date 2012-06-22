@@ -7,36 +7,39 @@
 	__Static__	No
 	__Parameters__ Param Default Description
 	
+---
+- __set_fields(__ _$fields_ __)__
 
 ---
 - __add_field(__ _$name, $label = '', $value = '', $form = array(), $rules = array()_ __)__
 
 
 ---
-- add_form_action
+- __add_form_action(__ _$field_ __)__
 
 ---
-- build
+- __build(__ _$data = array(), $edit_mode = false_ __)__
 
 ---
-- validation
+- __validation()__  
 
 ---
-- validated
+- __validated(__ _$field = null_ __)__
 
 ---
-- error
+- __error(__ _$field = null_ __)__
 
 ---
-- sequence
+- __sequence(__ _array $build_sequence_ __)__
 
+---
 #### Static methods
 
-input
-textarea
-password
-hidden
-label
-select
-radio_group
-checkbox_group
+- __input(__ _$name, $value = null, $attr = array(), $label = '', $errors = array()_ __)__
+- __textarea(__ _$name, $value = null, $attr = array(), $label = '', $errors = array()_ __)__
+- __password(__ _$name, $value = null, $attr = array(), $label = '', $errors = array()_ __)__
+- __hidden(__ _$field, $value = null, $attr = array()_ __)__
+- __label(__ _$text, $attr = array(), $error = ''_ __)__
+- __select(__ $name, $values = null, $options = array(), $attr = array(), $label = '', $errors = array()_ __)__
+- __radio_group(__ _$name, $options = array(), $value = null, $is_inline = false, $attr = array(), $label = '', $errors_ __)__
+- __checkbox_group(__ _$name, $options = array(), $checked = null, $is_inline = false, $attr = array(), $label = '', $errors_ __)__
