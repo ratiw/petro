@@ -87,8 +87,9 @@ class Petro
 			}
 			else
 			{
-				$old_prop = $prop;
-				$prop = array_merge($data->property($name, array()), (array) $prop, $col_def[$name]);
+				// $old_prop = $prop;
+				$col_name = isset($col_def[$name]) ? $col_def[$name] : array();
+				$prop = array_merge($data->property($name, array()), (array) $prop, $col_name);
 				
 				$form = isset($prop['form']) ? $prop['form'] : array();
 				$grid = isset($prop['grid']) ? $prop['grid'] : array();
