@@ -290,6 +290,9 @@ class Petro_Form
 				case 'textarea':
 					$fields .= static::textarea($f, $value, $attr, $label, $errors);
 					break;
+				case 'password':
+					$fields .= static::password($f, $value, $attr, $label, $errors);
+					break;
 				case 'radio':
 					$fields .= static::radio_group($f, $options, $value, false, $attr, $label, $errors);
 					break;
