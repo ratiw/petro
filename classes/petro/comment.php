@@ -43,7 +43,9 @@ class Petro_Comment
 			foreach ($query as $item)
 			{
 				$author = isset($item['username']) ? $item['username'] : 'Anonymous';
-				$date = empty($item['created_at']) ? '' : \Date::forge($item['created_at'])->format('%Y-%m-%d %H:%M');
+				$date = empty($item['created_at']) 
+					? '' 
+					: \Date::forge($item['created_at'])->format(\Config::get('petro.date_format', '%Y-%m-%d %H:%M'));
 				$cost = empty($item['cost']) ? '' : number_format($item['cost']);
 				
 				$out .= str_replace(array('{comment_id}', '{comment_author}', '{comment_date}', '{comment_text}', '{comment_cost}'), 

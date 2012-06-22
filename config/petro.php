@@ -23,7 +23,7 @@ return array(
 		)),
 	),
 	
-	'date_format'    => '%Y/%m/%d %H:%M:%S',
+	'date_format'    => '%d/%m/%Y %H:%M:%S',
 	'db_date_format' => 'Y-m-d',
 	'app_date_format'=> 'd/m/Y',
 	
