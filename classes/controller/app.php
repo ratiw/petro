@@ -414,6 +414,10 @@ class Controller_App extends \Controller_Template
 	{
 		$model = $this->model;
 		$data = $model::find($id);
+		if (is_null($data))
+		{
+			\Response::redirect(\Uri::segment(1));
+		}
 
 		$out = '';
 

@@ -78,10 +78,14 @@ class Controller_Users extends Controller_App
 	public function action_view($id = null)
 	{
 		$user = \Model_User::find($id);
+		if (is_null($user))
+		{
+			\Response::redirect('users');
+		}
 		
 		$out = Petro::render_panel(
 			'User Information',
-			Petro::render_attr_table($user, array('username', 'email', 'created_at', 'updated_at'))
+			Petro::render_attr_table($user, array('name', 'username', 'email', 'group', 'last_login'), static::_columns())
 		);
 		
 		$out .= Petro_Comment::render($this->ref_type, $id);
@@ -92,14 +96,18 @@ class Controller_Users extends Controller_App
 			array('title' => 'Delete User', 'link' => $routes['delete']),
 		);
 		
-		$current_user = \Auth::instance()->get_user_id();
-		if ($id == $current_user[1])
+		$gg = \Auth::instance()->get_groups();
+		$gp = \Auth::group()->get_name($user->group);
+		// var_dump('','',$gg, $gp);
+		if (\Auth::instance()->is_current_user($id))
 		{
 			$this->sidebars->add(
 				'Operations',
 				'<div>'
-					.\Html::anchor('users/change_password', 'Change password', array('class' => 'btn', 'style' => 'width:90%'))
-					.\Form::button('btn_reset_pwd', 'Reset password', array('class' => 'btn', 'style' => 'width:100%'))
+					.\Html::anchor('users/change_password', 'Change password')
+					.'<br/>'
+					.\Html::anchor('#', 'Reset password')
+					.'<br/>'.$user->group.' : '.$gp
 				.'</div>'
 			);
 		}
@@ -202,6 +210,10 @@ class Controller_Users extends Controller_App
 	public function load_user($id)
 	{
 		$user = Model_User::find($id);
+		if (is_null($user))
+		{
+			\Response::redirect('users');
+		}
 		
 		if (isset($user->profile_fields))
 		{
@@ -257,7 +269,6 @@ class Controller_Users extends Controller_App
 		}
 		else
 		{
-			// $user = \Sentry::user((int)$id);
 			$user = $this->load_user($id);
 		
 			$this->template->set_global('user', $user, false);
