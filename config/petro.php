@@ -5,7 +5,7 @@ return array(
 
 	'menu' => array(
 		'dashboard' 	=> array('menu_id' => 100, 'label' => 'Dashboard', 'link' => 'dashboard'),
-		'dropdown1'	=> array('menu_id' => 200, 'label' => 'User Management', 'submenu' => array(
+		'dropdown1'	=> array('menu_id' => 200, 'label' => 'User Management', 'level' => 100, 'submenu' => array(
 			'users' 	=> array('menu_id' => 210, 'label' => 'Users', 'link' => 'users'),
 			'groups' 	=> array('menu_id' => 220, 'label' => 'Groups', 'link' => 'groups'),
 		)),
@@ -21,6 +21,11 @@ return array(
 			'mi2' 		=> array('menu_id' => 520, 'label' => 'Menu Item 2'),
 			'mi3' 		=> array('menu_id' => 530, 'label' => 'Menu Item 3'),
 		)),
+	),
+	
+	'breadcrumb' => array(
+		'base'      => 'Home',
+		'separator' => '/',
 	),
 	
 	'date_format'    => '%d/%m/%Y %H:%M:%S',
@@ -40,6 +45,7 @@ return array(
 		// the url in the ignored list will never be checked for authentication
 		'ignore' => array(
 			// put url to be ignored here
+			'users/not_allow',
 		),
 	),
 	

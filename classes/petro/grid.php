@@ -61,9 +61,16 @@ class Petro_Grid
 	
 	public $summary = array();
 	
+	protected $petro_app = null;
 	
 	public function __construct($model, $columns = null)
 	{
+		if ($model instanceof \Petro\Controller_App)
+		{
+			$this->petro_app = $model;
+			$model = $this->petro_app->model;
+		}
+	
 		if ( ! class_exists($model))
 		{
 			throw new \FuelException('Petro_Grid : The given model "'.$model.'" does not exist');
@@ -91,7 +98,7 @@ class Petro_Grid
 		}
 	}
 	
-	protected function grab_columns()
+ 	protected function grab_columns()
 	{
 		try
 		{
@@ -118,7 +125,7 @@ class Petro_Grid
 			if ($found_id)
 			{
 				// automatically add record actions column
-				$this->columns['_actions_'] = static::default_actions();
+				$this->columns['_actions_'] = static::default_actions($this->petro_app);
 			}
 		}
 		catch (Exception $e)
@@ -1084,17 +1091,28 @@ class Petro_Grid
 		}
 	}
 	
-	public static function default_actions()
+	public static function default_actions($petro_app = null)
 	{
 		return array('name' => '_actions_', 'label' => '', 'form' => array(),
-			'grid' => array('process' => function($data) {
+			'grid' => array('process' => function($data) use ($petro_app) {
 				$routes = Petro::get_routes($data->id);
-
-				$str  = \Html::anchor($routes['view'], 'View');
-				$str .= '&nbsp;'.Html::anchor($routes['edit'], 'Edit');
-				$str .= '&nbsp;'.Html::anchor($routes['delete'], 'Delete', array(
-					'data-toggle' => 'modal', 'data-target' => '#petro-confirm', 'class' => 'del-item',
-				));
+				
+				if (is_null($petro_app))
+				{
+					$str  = \Html::anchor($routes['view'], 'View');
+					$str .= '&nbsp;'.Html::anchor($routes['edit'], 'Edit');
+					$str .= '&nbsp;'.Html::anchor($routes['delete'], 'Delete', array(
+						'data-toggle' => 'modal', 'data-target' => '#petro-confirm', 'class' => 'del-item',
+					));
+				}
+				else
+				{
+					$str  = $petro_app->can_read() ? \Html::anchor($routes['view'], 'View') : '';
+					$str .= '&nbsp;'.($petro_app->can_update() ? Html::anchor($routes['edit'], 'Edit') : '');
+					$str .= '&nbsp;'.($petro_app->can_delete() 
+						? Html::anchor($routes['delete'], 'Delete', array('data-toggle' => 'modal', 'data-target' => '#petro-confirm', 'class' => 'del-item')) 
+						: '');
+				}
 				
 				return $str;
 			})

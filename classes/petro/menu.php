@@ -23,15 +23,16 @@ class Petro_Menu
 		return $out;
 	}
 
-	protected static function render_menu($menus, $selected = null)
+	protected static function render_menu($menus)
 	{
-		isset($selected) or $selected = \Uri::segment(1);
+		$selected = \Uri::segment(1);
 	
 		$out = '';
 		
 		foreach ($menus as $k => $v)
 		{
 			isset($v['link']) or $v['link'] = '#';
+			isset($v['level']) or $v['level'] = false;
 			
 			if ( isset($v['submenu']) )
 			{
@@ -42,6 +43,7 @@ class Petro_Menu
 			}
 			else
 			{
+				// if ( ! $v['level'] and $v['level'] == $user_level)
 				$active = ($selected == $k) ? ' class="active"' : '';
 				$out .= str_replace(array('{menu_id}', '{active}', '{link}', '{label}'),
 					array($k, $active, \Uri::base().$v['link'], $v['label']),

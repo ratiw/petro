@@ -96,9 +96,8 @@ class Controller_Users extends Controller_App
 			array('title' => 'Delete User', 'link' => $routes['delete']),
 		);
 		
-		$gg = \Auth::instance()->get_groups();
 		$gp = \Auth::group()->get_name($user->group);
-		// var_dump('','',$gg, $gp);
+		
 		if (\Auth::instance()->is_current_user($id))
 		{
 			$this->sidebars->add(

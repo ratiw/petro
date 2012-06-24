@@ -35,7 +35,7 @@ class Controller_App extends \Controller_Template
 	protected $user = array();
 	
 	// 
-	protected $model = null;
+	public $model = null;
 	
 	//
 	protected $app_name = null;
@@ -132,7 +132,7 @@ class Controller_App extends \Controller_Template
 	
 		$this->sidebars = new Petro_Sidebar();
 
-		is_null($this->must_login) and $this->must_login = \Config::get('petro.auth.enable');
+		is_null($this->must_login) and $this->must_login = \Config::get('petro.auth.enable', true);
 		
 		// if require login and not in the ignore login list, then check for login
 		if ($this->must_login and !in_array(\Uri::string(), static::$ignore_login))
@@ -163,9 +163,9 @@ class Controller_App extends \Controller_Template
 	{
 		$uri = \Uri::segments();
 		
-		$base = 'Home';
+		$base = \Config::get('petro.breadcrumb.base', 'Home');
 		$link = \Uri::base();
-		$sep = '/';
+		$sep = \Config::get('petro.breadcrumb.separator', '/');
 		
 		$out = '<span class="breadcrumb">'.PHP_EOL;
 		$out .= '<a href="#">'.$base.'</a><span class="breadcrumb_sep">'.$sep.'</span>';
@@ -190,10 +190,15 @@ class Controller_App extends \Controller_Template
 		
 		foreach ($this->action_items as $act)
 		{
-			if ( isset($act['attr']) )
+			if (isset($act['visible']) and $act['visible'] == false)
+			{
+				continue;
+			}
+		
+			if (isset($act['attr']))
 			{
 				$attr = $act['attr'];
-				if ( isset($attr['class']) )
+				if (isset($attr['class']))
 				{
 					$attr['class'] = $attr['class'].' btn pull-right';
 				}
@@ -346,7 +351,7 @@ class Controller_App extends \Controller_Template
 				$comment = array(
 					'ref_type' => Input::post('comment_ref_type'),
 					'ref_id' => Input::post('comment_ref_id'),
-					'user_id' => $user->get('id'),
+					'user_id' => $user[1],
 					'type' => Input::post('comment_type'),
 					'text' => $text,
 				);
@@ -404,7 +409,7 @@ class Controller_App extends \Controller_Template
 		$this->setup_index($grid);
 		
 		$this->action_items = array(
-			array('title' => 'Add New '.$this->app_name, 'link' => Petro::get_routes('new')),
+			array('title' => 'Add New '.$this->app_name, 'link' => Petro::get_routes('new'), 'visible' => $this->can_create()),
 		);
 
 		$this->template->set('content', $grid->render($this->grid_columns), false);
@@ -430,12 +435,13 @@ class Controller_App extends \Controller_Template
 
 		$routes = Petro::get_routes($id);
 		$this->action_items = array(
-			array('title' => 'Edit '.$this->app_name, 'link' => $routes['edit']),
+			array('title' => 'Edit '.$this->app_name, 'link' => $routes['edit'], 'visible' => $this->can_edit()),
 			array(
 				'title' => 'Delete '.$this->app_name, 
 				'link' => $routes['delete'], 
 				'attr' => array(
 					'data-toggle' => 'modal', 'data-target' => '#petro-confirm', 'class' => 'del-item',
+				'visible' => $this->can_delete(),
 				)
 			),
 		);
@@ -553,7 +559,38 @@ class Controller_App extends \Controller_Template
 		\Response::redirect(\Uri::segment(1));
 
 	}
-
+	
+	public function action_not_allow()
+	{
+		$out = '<div class="well" style="text-align:center"><h3>You\'re not allow to access this page.</h3></div>';
+		$this->template->set('content', $out, false);
+	}
+	
+	public function can_create()
+	{
+		return \Auth::has_access($this->ref_type.'.[create]');
+	}
+	
+	public function can_read()
+	{
+		return \Auth::has_access($this->ref_type.'.[read]');
+	}
+	
+	public function can_update()
+	{
+		return \Auth::has_access($this->ref_type.'.[update]');
+	}
+	
+	public function can_delete()
+	{
+		return \Auth::has_access($this->ref_type.'.[delete]');
+	}
+	
+	public function can_print()
+	{
+		return \Auth::has_access($this->ref_type.'.[print]');
+	}
+	
 }
 
 /* End of file app.php */
