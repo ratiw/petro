@@ -465,7 +465,11 @@ class Controller_App extends \Controller_Template
 
 				// if the extended class define 'create_new' method, call it
 				// this method must return the updated data
-				$this->before_insert($fields);
+				if ( ! $this->before_insert($fields))
+				{
+					\Session::set_flash('error', 'Cancelled by the user.');
+					\Response::redirect($this->app);
+				}
 				
 				$model = $this->model;
 				$data = $model::forge($fields);
@@ -507,9 +511,13 @@ class Controller_App extends \Controller_Template
 			{
 				$fields = \Input::post();
 				
-				// if the extended class has defined 'before_update' method, call it
-				// this method must return the updated data
-				$this->before_update($data, $fields);
+				// if the extended class has defined 'before_update' method, call it.
+				// if the method returns true, then updated data, else cancel the update
+				if ( ! $this->before_update($data, $fields))
+				{
+					\Session::set_flash('error', 'Update cancelled by the user.');
+					\Response::redirect($this->app);
+				}
 				
 				foreach ($fields as $name => $val)
 				{
@@ -524,7 +532,6 @@ class Controller_App extends \Controller_Template
 				{
 					$this->after_update();
 					\Session::set_flash('success', 'The record has been updated.');
-					\Response::redirect($this->app);
 				}
 				else
 				{
@@ -548,16 +555,21 @@ class Controller_App extends \Controller_Template
 		$model = $this->model;
 		$data = $model::find($id);
 		
-		$this->before_delete($id);
-		
-		if ($data->delete())
+		if ( ! $this->before_delete($id))
 		{
-			$this->after_delete();
-			\Session::set_flash('success', 'Record has successfully been deleted.');
+			\Session::set_flash('error', 'Delete cancelled by user.');
 		}
 		else
 		{
-			\Session::set_flash('error', 'Could not delete data.');
+			if ($data->delete())
+			{
+				$this->after_delete();
+				\Session::set_flash('success', 'Record has successfully been deleted.');
+			}
+			else
+			{
+				\Session::set_flash('error', 'Could not delete data.');
+			}
 		}
 
 		\Response::redirect($this->app);
