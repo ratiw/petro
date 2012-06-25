@@ -19,7 +19,7 @@ class Controller_App extends \Controller_Template
 	// ignore login list
 	protected static $ignore_login = array();
 	
-	public $ref_type = null;
+	public $ref_type = null;		//<-- to be removed
 
 	// App page action items
 	public $action_items = array();
@@ -37,7 +37,10 @@ class Controller_App extends \Controller_Template
 	// 
 	public $model = null;
 	
-	//
+	// this will refer to the Uri::segment(1) a.k.a current controller
+	protected $app = null;
+	
+	// the capitalized version of $app
 	protected $app_name = null;
 	
 	//
@@ -61,7 +64,7 @@ class Controller_App extends \Controller_Template
 		);
 		
 		static::set_title(\Config::get('petro.site_name', ''));
-		static::set_menu(\Config::get('petro.menu', static::default_menu()));
+		static::set_menu(\Config::load('petro_menu'));
 	}
 	
 	public static function set_title($title)
@@ -90,7 +93,7 @@ class Controller_App extends \Controller_Template
 	
 	public static function set_menu($menu)
 	{
-		static::$menu = $menu;
+		static::$menu = empty($menu) ? static::default_menu() : $menu;
 	}
 	
 	public static function get_menu()
@@ -101,17 +104,19 @@ class Controller_App extends \Controller_Template
 	public function before() //$data = null)
 	{
 		parent::before();
+
+		$this->app = \Uri::segment(1);
 		
 		// guess app_name, if it is not provided
 		if (is_null($this->app_name))
 		{
-			$this->app_name = \Inflector::classify(\Uri::segment(1));
+			$this->app_name = \Inflector::classify($this->app);
 		}
 		
 		// guess model name from URI segment, if it is not provided
 		if (is_null($this->model))
 		{
-			$this->model = 'Model_'.\Inflector::classify(\Uri::segment(1));
+			$this->model = 'Model_'.$this->app_name;
 		}
 
 		// set app title
@@ -121,8 +126,7 @@ class Controller_App extends \Controller_Template
 		$this->template->set('menu', Petro_Menu::render(static::$menu), false);
 	
 		// use uri segment to find ref_type from defined menu for later use
-		$menu = Petro_Menu::find(\Uri::segment(1), static::$menu);
-		$this->ref_type = $menu['menu_id'];
+		$menu = Petro_Menu::find($this->app, static::$menu);
 
 		// if page_title is not set, default to menu label
 		if ( ! isset($this->template->page_title))
@@ -397,7 +401,7 @@ class Controller_App extends \Controller_Template
 		$form = new Petro_Form(array('class' => 'form-horizontal'));
 		$form->add_model($this->model);
 		$form->add_form_action(\Form::submit('submit', 'Submit', array('class' => 'btn btn-primary')));
-		$form->add_form_action(\Html::anchor(\Uri::segment(1), 'Cancel', array('class' => 'btn')));
+		$form->add_form_action(\Html::anchor($this->app, 'Cancel', array('class' => 'btn')));
 
 		return $form;
 	}
@@ -421,7 +425,7 @@ class Controller_App extends \Controller_Template
 		$data = $model::find($id);
 		if (is_null($data))
 		{
-			\Response::redirect(\Uri::segment(1));
+			\Response::redirect($this->app);
 		}
 
 		$out = '';
@@ -470,7 +474,7 @@ class Controller_App extends \Controller_Template
 				{
 					$this->after_insert();
 					\Session::set_flash('success', 'Data has been added successfully.');
-					\Response::redirect(\Uri::segment(1));
+					\Response::redirect($this->app);
 				}
 				else
 				{
@@ -485,7 +489,7 @@ class Controller_App extends \Controller_Template
 
 		isset($this->form_columns) and $form->sequence($this->form_columns);
 		
-		$this->template->page_title = "New ".\Inflector::classify(\Uri::segment(1));
+		$this->template->page_title = "New ".$this->app_name;
 		$this->template->set('content', $form->build(), false);
 	}
 	
@@ -520,7 +524,7 @@ class Controller_App extends \Controller_Template
 				{
 					$this->after_update();
 					\Session::set_flash('success', 'The record has been updated.');
-					\Response::redirect(\Uri::segment(1));
+					\Response::redirect($this->app);
 				}
 				else
 				{
@@ -535,7 +539,7 @@ class Controller_App extends \Controller_Template
 		
 		isset($this->form_columns) and $form->sequence($this->form_columns);
 		
-		$this->template->page_title = "Edit ".\Inflector::classify(\Uri::segment(1));
+		$this->template->page_title = "Edit ".$this->app_name;
 		$this->template->set('content', $form->build($data, true), false);
 	}
 	
@@ -556,7 +560,7 @@ class Controller_App extends \Controller_Template
 			\Session::set_flash('error', 'Could not delete data.');
 		}
 
-		\Response::redirect(\Uri::segment(1));
+		\Response::redirect($this->app);
 
 	}
 	
@@ -568,27 +572,27 @@ class Controller_App extends \Controller_Template
 	
 	public function can_create()
 	{
-		return \Auth::has_access($this->ref_type.'.[create]');
+		return \Auth::has_access($this->app.'.[create]');
 	}
 	
 	public function can_read()
 	{
-		return \Auth::has_access($this->ref_type.'.[read]');
+		return \Auth::has_access($this->app.'.[read]');
 	}
 	
 	public function can_update()
 	{
-		return \Auth::has_access($this->ref_type.'.[update]');
+		return \Auth::has_access($this->app.'.[update]');
 	}
 	
 	public function can_delete()
 	{
-		return \Auth::has_access($this->ref_type.'.[delete]');
+		return \Auth::has_access($this->app.'.[delete]');
 	}
 	
 	public function can_print()
 	{
-		return \Auth::has_access($this->ref_type.'.[print]');
+		return \Auth::has_access($this->app.'.[print]');
 	}
 	
 }

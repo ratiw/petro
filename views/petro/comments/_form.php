@@ -3,7 +3,7 @@
 	<div class="panel_contents">
 		<?php echo $comments; ?>
 		<?php echo Form::open(array('action' => Uri::segment(1).'/comment', 'class' => 'active_admin_comment', 'method' => 'post')); ?>
-		<input type="hidden" id="comment_ref_type" name="comment_ref_type" value="<?php echo $ref_type; ?>">
+		<input type="hidden" id="comment_app" name="comment_app" value="<?php echo $app; ?>">
 		<input type="hidden" id="comment_ref_id" name="comment_ref_id" value="<?php echo $ref_id; ?>">
 		<input type="hidden" id="comment_type" name="comment_type" value="1">
 		<input type="hidden" id="last_url" name="last_url" value="<?php echo $last_url; ?>">

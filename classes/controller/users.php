@@ -88,7 +88,7 @@ class Controller_Users extends Controller_App
 			Petro::render_attr_table($user, array('name', 'username', 'email', 'group', 'last_login'), static::_columns())
 		);
 		
-		$out .= Petro_Comment::render($this->ref_type, $id);
+		$out .= Petro_Comment::render($this->app, $id);
 
 		$routes = Petro::get_routes($id);
 		$this->action_items = array(

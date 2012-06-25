@@ -28,7 +28,7 @@ class Auth_Acl_PetroAcl extends \Auth_Acl_Driver
 		}
 		
 		$area_rights = \DB::select()->from($this->table_name)
-			->where('app_id', '=', $area)
+			->where('app', '=', $area)
 			->and_where('level', '=', $group)
 			->execute();
 

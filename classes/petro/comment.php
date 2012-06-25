@@ -12,23 +12,23 @@ class Petro_Comment
 		static::$_table = \Config::get('petro.comment.table');
 	}
 
-	public static function render($ref_type, $ref_id, $title = 'Comments')
+	public static function render($app, $ref_id, $title = 'Comments')
 	{
-		if ( ! isset($ref_type) )
+		if ( ! isset($app) )
 		{
-			throw new \FuelException('Petro_Comment : Invalid $ref_type = '.$ref_type);
+			throw new \FuelException('Petro_Comment : Invalid $app = '.$app);
 		}
 	
 		$query = \DB::query(
 			'SELECT '.static::$_table.'.*, users.username FROM '.static::$_table.', users'.
 			' WHERE '.static::$_table.'.user_id = users.id'.
-			' AND '.static::$_table.'.ref_type = '.$ref_type.
+			' AND '.static::$_table.'.app = "'.$app.'"'.
 			' AND '.static::$_table.'.ref_id = '.$ref_id.
 			' ORDER BY '.static::$_table.'.created_at asc'
 		)->execute();
 		
 		$data['title']    = $title;
-		$data['ref_type'] = $ref_type;
+		$data['app'] = $app;
 		$data['ref_id']   = $ref_id;
 		$data['total_comments'] = count($query);
 		
