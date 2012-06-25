@@ -8,6 +8,7 @@ class Petro_Menu
 
 	public static function _init()
 	{
+		\Lang::load('menu');
 		\Config::load('petro', true);
 		static::$template = \Config::get('petro.template.menu');
 	}
@@ -31,7 +32,8 @@ class Petro_Menu
 		
 		foreach ($menus as $k => $v)
 		{
-			isset($v['link']) or $v['link'] = '#';
+			isset($v['label']) or $v['label'] = \Lang::get($k);
+			isset($v['link'])  or $v['link']  = '#';
 			isset($v['level']) or $v['level'] = false;
 			
 			if (isset($v['submenu']) and count($v['submenu']) > 0)
