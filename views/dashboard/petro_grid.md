@@ -69,6 +69,14 @@ Petro_Grid has many features that can help ...
 
 	> `$grid = new Petro_Grid('Model_User', array('username', 'group', 'email', 'last_login'));`
 
+	or
+	
+	Create a new grid using the information from Petro\Controller_App. Petro_Grid will
+	look into the given controller for model info and app_id. If you want to use 
+	Petr's ACL feature, you have to use this option.
+	
+	>	`$grid = new Petro_Grid($this);`
+	
 3. Render the grid for output  
 
 	Render the grid that has already been initialized.
@@ -80,12 +88,27 @@ Petro_Grid has many features that can help ...
 	and in the given order.
 	> `$data['content'] = $grid->render(array('group', 'username', 'email'));`
 
+## Instatiation
 
+	Petro_Grid(<petro_app>, 
 
 ## Grid Settings
 - Pagination
 - Page Info
-- Filters
+- Filters  
+	
+		$this->sidebars->add('Filters', 
+			Petro::render_filters(array(
+				<column_name> => array(<options>),
+				...
+			))
+		);
+		
+	Available options
+	- _label_ &mdash; label of the column
+	- _type_ &mdash; string|select|checkbox|radio
+	- _collection_ &mdash; array of key => value pair
+	
 - Scopes
 
 ## Form Options

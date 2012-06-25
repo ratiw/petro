@@ -10,12 +10,12 @@ Petro is like a small application framework, where you can config the content of
 Petro provides a Controller template for you to work on
 
 * [__Petro_Grid__]({base_url}dashboard/petro_grid)  
-* __Petro_Menu__  
+* [__Petro_Menu__]({base_url}dashboard/petro_menu)  
 * __Petro_Sidebar__  
 * [__Petro_Lookup__]({base_url}dashboard/petro_lookup)
 * __Petro_Comment__  
 * [__Petro_Form__]({base_url}dashboard/petro_form)
-* [__Auth_Login_Petro__]()
+* [__Petro Auth__]({base_url}dashboard/petro_auth)
 * together they form a _RAD Environment_ -- [__Petro_App__]({base_url}dashboard/petro_app)
 
 -------------------------------------------------
@@ -80,7 +80,7 @@ development environment and setup the database connection.
 	- Delete
 - Bootstrap theme
 - Menu
-- User Management Interface for Sentry
+- User Management
 - Grid
 - Grid Scope
 - Grid Filter

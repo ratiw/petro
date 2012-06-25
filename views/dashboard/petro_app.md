@@ -62,6 +62,10 @@ Just remember that when you override the predefine method, the related callback 
 you have to call it manually. Also, some interface elements, like `action_items` will not be displayed automatically 
 as well. But you can always do it manually. Just follows instructions on another section.
 
-"Authentication, suport?"
-- $must_login
-- config `auth`
+#### "Authentication, suport?"  
+- $must_login  
+- config `auth`  
+
+{br}
+-----
+More info at [__Petro_App Structure__]({base_url}dashboard/petro_app_structure)
