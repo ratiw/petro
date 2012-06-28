@@ -244,15 +244,10 @@ class Controller_App extends \Controller_Template
 				$valid_login = \Auth::instance()->login($val->validated('username'), $val->validated('password'));
 				if ($valid_login)
 				{
-					$user = \Auth::instance()->get_user_array(array('username'));
-					\Session::set('user_info', array(
-						'id'         => $user['id'], 
-						'username'   => $user['username'],
-						'email'      => $user['email'],
-						'first_name' => $user['metadata']['first_name'],
-						'last_name'  => $user['metadata']['last_name'],
-					));
+					$user = \Auth::instance()->get_user_info();
+					\Session::set('user_info', $user);
 					\Session::set_flash('success', 'Welcome, '.$val->validated('username'));
+					
 					$url = \Session::get('redirect_url', '/');
 					\Session::delete('redirect_url');
 					\Response::redirect($url);

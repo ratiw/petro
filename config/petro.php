@@ -3,7 +3,7 @@
 return array(
 	'site_name' => 'Petro!',
 
-	'menu_table' => 'apps',
+	'menu_table' => 'menu',
 	
 	'breadcrumb' => array(
 		'base'      => 'Home',
@@ -65,6 +65,7 @@ return array(
 			'wrapper_end'		   => "</ul>\n",
 			'menu_item'		   => "\t<li id=\"menu_{item_id}\"{active}>\n\t\t<a href=\"{link}\">{label}</a>\n\t</li>\n",
 			'menu_dropdown'	   => "\t<li id=\"menu_{item_id}\" class=\"dropdown{active}\">\n\t\t<a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\">{label} <b class=\"caret\"></b></a>\n\t\t<ul class=\"dropdown-menu\">\n\t\t\t{submenu}\n\t\t</ul>\n\t</li>\n",
+			'menu_divider'     => "\t<li class=\"divider\"></li>\n",
 		),
 		
 		'panel' => "<div class=\"{class}\">\n\t<p>{title}</p>\n\t<div class=\"panel_contents\">\n\t\t{content}\n\t</div>\n</div>\n",

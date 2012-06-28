@@ -33,4 +33,21 @@ class Auth_Login_PetroAuth extends \Auth_Login_SimpleAuth
 		
 		return ($curr_user[1] == $id);
 	}
+	
+	public function get_user_info()
+	{
+		if (empty($this->user))
+		{
+			return false;
+		}
+		
+		return array(
+			'id'         => (int) $this->user['id'],
+			'username'   => $this->user['username'],
+			'email'      => $this->user['email'],
+			'group'      => $this->user['group'],
+			'level'      => \Auth::group()->get_level(),
+			'profile_fields' => $this->get_profile_fields(),
+		);
+	}
 }

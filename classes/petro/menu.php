@@ -4,12 +4,14 @@ namespace Petro;
 
 class Petro_Menu 
 {
+	protected static $table = null;
 	protected static $template = array();
 
 	public static function _init()
 	{
 		\Lang::load('menu');
 		\Config::load('petro', true);
+		static::$table = \Config::get('petro.menu_table', 'menu');
 		static::$template = \Config::get('petro.template.menu');
 	}
 	
@@ -32,9 +34,23 @@ class Petro_Menu
 		
 		foreach ($menus as $k => $v)
 		{
+			is_int($k) and $k = $v;
+			
+			if (substr_compare($k, 'divider', 0, 7) == 0)
+			{
+				$out .= static::$template['menu_divider'];
+				continue;
+			}
+			
 			isset($v['label']) or $v['label'] = \Lang::get($k);
 			isset($v['link'])  or $v['link']  = '#';
-			isset($v['level']) or $v['level'] = false;
+			isset($v['level']) or $v['level'] = 0;
+			
+			$user = \Session::get('user_info');
+			if ($user['level'] < $v['level'])
+			{
+				continue;
+			}
 			
 			if (isset($v['submenu']) and count($v['submenu']) > 0)
 			{
@@ -45,7 +61,6 @@ class Petro_Menu
 			}
 			else
 			{
-				// if ( ! $v['level'] and $v['level'] == $user_level)
 				$active = ($selected == $k) ? ' class="active"' : '';
 				$out .= str_replace(array('{item_id}', '{active}', '{link}', '{label}'),
 					array($k, $active, \Uri::base().$v['link'], $v['label']),
@@ -86,11 +101,9 @@ class Petro_Menu
 
 		return $out;
 	}
-
-	public static function load_from_table($table = null)
-	{
-		is_null($table) and $table = \Config::get('petro.menu_table', 'apps');
 	
+	protected static function get_menu($group, $parent = null)
+	{
 		$menu_item = function($data) {
 			return array(
 				'name'    => $data['name'],
@@ -102,32 +115,32 @@ class Petro_Menu
 			);
 		};
 	
-		$get_menu = function($parent = null) use ($table) {
-			$query = \DB::select('*')->from($table);
-			$query->where('parent', '=', $parent);
-			return $query->order_by('seq','asc')->execute();
-		};
-		$result = $get_menu();
+		$query = \DB::select('*')->from(static::$table);
+		$query->where('group', '=', $group);
+		$query->where('parent', '=', $parent);
+		$result = $query->order_by('seq','asc')->execute();
 		
 		$menu = array();
 		foreach ($result as $r)
 		{
 			$menu[$r['name']] = $menu_item($r);
+			$submenu = false;
 			if ($r['has_sub'] == 'Y')
 			{
-				$r2 = $get_menu($r['name']);
-				$submenu = array();
-				foreach ($r2 as $s)
-				{
-					$submenu[$s['name']] = $menu_item($s);
-				}
-				if (count($submenu) > 0)
-				{
-					$menu[$r['name']]['submenu'] = $submenu;
-				}
+				$submenu = static::get_menu($group, $r['name']);
 			}
+			$submenu and $menu[$r['name']]['submenu'] = $submenu;
 		}
 		
+		return $menu;
+	}
+
+	public static function load_from_table()
+	{
+		$menu = static::get_menu('main');
+		// echo '<br><br><pre><code>';
+		// print_r($menu);
+		// echo '</code></pre>';
 		return $menu;
 	}
 }
