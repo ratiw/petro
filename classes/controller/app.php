@@ -64,7 +64,9 @@ class Controller_App extends \Controller_Template
 		);
 		
 		static::set_title(\Config::get('petro.site_name', ''));
-		static::set_menu(\Config::load('petro_menu'));
+		
+		$load_from_table = \Config::get('petro.menu.load_from_table', false);
+		static::set_menu($load_from_table ? Petro_Menu::load_from_table() : \Config::load('petro_menu'));
 	}
 	
 	public static function set_title($title)
@@ -84,7 +86,7 @@ class Controller_App extends \Controller_Template
 	{
 		return array(
 			'dashboard' 	=> Petro_Menu::item(100, 'Dashboard'),
-			'dropdown1'	=> Petro_Menu::item(200, 'User Management', '#', array(
+			'dropdown1'	    => Petro_Menu::item(200, 'User Management', '#', array(
 				'users' 	=> Petro_Menu::item(210, 'Users', 'users'),
 				'groups' 	=> Petro_Menu::item(220, 'Groups', 'groups'),
 			)),
@@ -573,8 +575,7 @@ class Controller_App extends \Controller_Template
 	
 	public function action_not_allow()
 	{
-		$out = '<div class="well" style="text-align:center"><h3>You\'re not allow to access this page.</h3></div>';
-		$this->template->set('content', $out, false);
+		$this->template->set('content', \View::forge('petro/not_allow'), false);
 	}
 	
 	public function can_create()
@@ -602,6 +603,27 @@ class Controller_App extends \Controller_Template
 		return \Auth::has_access($this->app.'.[print]');
 	}
 	
+	public function can_edit()
+	{
+		return $this->can_update();
+	}
+	
+	public function router($method, $args)
+	{
+		if (in_array(\Uri::string(), static::$ignore_login))
+		{
+			return call_user_func_array(array($this, 'action_'.$method), $args);
+		}
+	
+		$right = $this->app.'.['.str_replace(array('edit', 'view'), array('update', 'read'), $method).']';
+
+		if (\Auth::has_access($right))
+		{
+			return call_user_func_array(array($this, 'action_'.$method), $args);
+		}
+		\Session::delete('redirect_url');
+		\Response::redirect($this->app.'/not_allow');
+	}
 }
 
 /* End of file app.php */
