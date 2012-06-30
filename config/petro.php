@@ -3,7 +3,10 @@
 return array(
 	'site_name' => 'Petro!',
 
-	'menu_table' => 'menu',
+	'menu' => array(
+		'table' => 'menu',
+		'load_from_table' => false,
+	),
 	
 	'breadcrumb' => array(
 		'base'      => 'Home',
@@ -23,11 +26,11 @@ return array(
 			'login'  => 'users/login',
 			'logout' => 'users/logout',
 			'signup' => 'users/signup',
+			'not_allow' => 'users/not_allow',
 		),
 		// the url in the ignored list will never be checked for authentication
 		'ignore' => array(
 			// put url to be ignored here
-			'users/not_allow',
 		),
 	),
 	
