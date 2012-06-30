@@ -11,7 +11,8 @@ class Petro_Menu
 	{
 		\Lang::load('menu');
 		\Config::load('petro', true);
-		static::$table = \Config::get('petro.menu_table', 'menu');
+		
+		static::$table = \Config::get('petro.menu.table', 'menu');
 		static::$template = \Config::get('petro.template.menu');
 	}
 	
